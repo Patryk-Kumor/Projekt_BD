@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 import argparse
 import psycopg2
 import json
-
+import sys
 
 #
 #   LOGOWANIE W POSTGRESIE:
@@ -13,33 +14,34 @@ import json
 
 # Pierwsze uruchomienie programu
 def f_open_init(arg):
-    # Dane dostepowe do bazy danych (zakladam poprawnosc danych dostepu)
+    # Dane dostępowe do bazy danych (zakładam poprawność danych dostępu)
     global conn
     conn = psycopg2.connect(host="localhost", port="5432",
                             dbname=arg['open']['database'],
                             user=arg['open']['login'],
                             password=arg['open']['password'])
-    # Inicjalizacja kursora odpowiadajacego za polecenia bazodwanowe
+    # Inicjalizacja kursora odpowiadającego za polecenia bazodwanowe
     global cur
     cur = conn.cursor()
-    # Polecenia tworzace niezbedne tabele bazy (w pliku base.sql z katalogu)
+    # Polecenia tworzące niezbędne tabele bazy (w pliku base.sql z katalogu)
     try:
-        # Pobieranie zawartosci z pliku .sql
+        # Pobieranie zawartości z pliku .sql
         database_create = open('base.sql','r') 
         # Execute z pliku
         cur.execute(database_create.read())
         # Commit zmian pobranych z .sql
         conn.commit()
-        print ('{"status" : "OK"}')
+        print '{"status" : "OK"}'
     except Exception as err:
-        # Rollback w przypadku bledow
+        # Rollback w przypadku błędów w pliku .sql
         conn.rollback()
-        print ('{"status" : "ERROR",\n "debug" : "%s" }' % ( str(err)[0:-1] ) )       
+        print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+        sys.exit(0)  
 
 
 # Kolejne uruchomienia programu
-def f_open_normal(arg):
-    # Dane dostepowe do bazy danych (zakladam poprawnosc danych dostepu)
+def f_open_app(arg):
+    # Dane dostępowe do bazy danych (zakładam poprawność danych dostępu)
     global conn
     conn = psycopg2.connect(host="localhost", port="5432",
                             dbname=arg['open']['database'],
@@ -50,78 +52,38 @@ def f_open_normal(arg):
     cur = conn.cursor()
     print ('{"status" : "OK"}')
 
+def check_id(member):
+    return 0
+
+def add_member(member, password, timestamp):
+    return 0
 
 def f_leader(arg):
-    # Sprawdzamy czy istnieje taki member/ czy istnieje gdzies takie ID
-    cur.execute("SELECT * FROM global_ids WHERE ID = %s;" % (arg['leader']['member']))
+    # Sprawdzamy czy istnieje taki member/ czy istnieje gdzieś takie ID
+    cur.execute("SELECT * FROM global_ids WHERE ID = %s;", (arg['leader']['member'],))
     wynik = len(cur.fetchall())
     if wynik == 0: 
-        # Jezeli nie ma znalezionych krotek - nie istnieje nic o takim id - droga wolna do dodania membera
+        # Jeżeli nie ma znalezionych krotek/ nie istnieje nic o takim id - droga wolna do dodania membera(leadera)
         try:
-            # Dodawanie uzytkownika wraz z haszowaniem hasla w bazie danych oraz dodawanie ID do tabeli z globalnymi id
+            # Dodawanie membera wraz z haszowaniem hasła w bazie danych oraz dodawanie ID do tabeli z globalnymi id
             # crypt(password, gen_salt('md5'))
-            args = "%s, True, True, crypt('%s', gen_salt('md5')), to_timestamp(%s)" % (arg['leader']['member'], arg['leader']['password'], arg['leader']['timestamp'])
-            cur.execute("INSERT INTO member (ID, leader, activity, password, activity_date) VALUES (%s);" %(args) \
-                      + "INSERT INTO global_ids (ID) VALUES (%s);" %(arg['leader']['member']) )
+            cur.execute("""INSERT INTO member (ID, leader, activity, password, activity_date) 
+                               VALUES (%s, True, True, crypt(%s, gen_salt('md5')), to_timestamp(%s));
+                           INSERT INTO global_ids (ID) VALUES (%s);""",
+                        (arg['leader']['member'], arg['leader']['password'], arg['leader']['timestamp'], arg['leader']['member']) )
             conn.commit()
-            print ('{"status" : "OK"}')
+            print '{"status" : "OK"}'
         except Exception as err:
-            # Rollback jesli cos poszlo nie tak
+            # Rollback jeśli coś poszło nie tak
             conn.rollback()
-            print ('{"status" : "ERROR",\n "debug" : "%s" }' % ( str(err)[0:-1] ) )  
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]  
     else: 
         # Jezeli znaleziono krotki - id jest juz zajete
-        print ('{"status" : "ERROR",\n "debug" : "ID jest juz uzywany" }')     
+        print ('{"status" : "ERROR",\n "debug" : "ID jest juz uzywany" }')    
 
 
 def f_protest(arg):
-    com = """
-
-                # SPRAWDZANIE AKTYWNOSCI 
-                #########
-
-    # Sprawdzamy czy istnieje taki member/ czy istnieje gdzies takie ID
-    cur.execute("SELECT * FROM member WHERE ID = %s;" % (arg['protest']['member']))
-    wynik = cur.fetchall()
-    if  len(wynik) == 1:
-
-
-
-
-
-        # Sprawdzamy dane membera
-        hasz = wynik[0][3]
-        string = "SELECT password = crypt('%s', password) FROM  (SELECT password FROM member WHERE id=%s) as foo;" %(arg['protest']['password'], arg['protest']['member'])
-        cur.execute(string)
-        potwierdzenie = cur.fetchall()
-        if potwierdzenie[0][0]:
-            # AKTUALIZACJA TIMESTAMP MEMBERA
-
-            ###
-            print ""
-        else:
-            # Niepoprawne haslo
-            print ('{"status" : "ERROR",\n "debug" : "Haslo jest niepoprawne" }')     
-            return       
-    else:
-        # Dodawanie membera
-        try:
-            # Dodawanie uzytkownika wraz z haszowaniem hasla w bazie danych oraz dodawanie ID do tabeli z globalnymi id
-            # crypt(password, gen_salt('md5'))
-            args = "%s, False, True, crypt('%s', gen_salt('md5')), to_timestamp(%s)" % (arg['protest']['member'], arg['protest']['password'], arg['protest']['timestamp'])
-            cur.execute("INSERT INTO member (ID, leader, activity, password, activity_date) VALUES (%s);" %(args) \
-                      + "INSERT INTO global_ids (ID) VALUES (%s);" %(arg['leader']['member']) )
-            conn.commit()
-        except Exception as err:
-            # Rollback jesli cos poszlo nie tak
-            conn.rollback()
-            print ('{"status" : "ERROR",\n "debug" : "%s" }' % ( str(err)[0:-1] ) )  
-            return
-
-
-    # DALSZE DZIALANIA DODAWANIA PROTESTU
-    """
-    print ('{"status" : "OK"')
+    print ("protest")
 
 
 def f_support(arg):
@@ -151,34 +113,19 @@ def f_votes(arg):
 def f_trolls(arg):
     print ("trolls") 
 
-
-# Wywolanie wraz a flaga --init
-def initialize():
-    # Przetwarzanie linijek pliku wejsciowego
-    for line in args.file:
-        # Wczytanie jsona
-        dic = json.loads(line)
-        # Case funkcji       
-        case = dic.keys()[0]
+# Funkcja przyporządkowująca odpowiednie funkcje do dalszej obróbki jsonów 
+def if_case(dic, case):
+    if args.init:
         if case == 'open':
             f_open_init(dic)
         elif case == 'leader':
             f_leader(dic)
-        # Koniec - zakladamy ze dane sa poprawne -> nie zwrocimy bledow
         else:
-            print ('{"status": "ERROR"}')
-
-
-# Kolejne wywolania programu
-def normal():
-    # Przetwarzanie linijek pliku wejsciowego
-    for line in args.file:
-        # Wczytanie jsona
-        dic = json.loads(line)
-        # Case funkcji       
-        case = dic.keys()[0]
+            # Koniec - zakładamy ze dane jsony są poprawne -> nie zwrócimy błędów
+            print '{"status": "ERROR", "debug": "Niepoprawne wywołania init"}'
+    else:
         if case == 'open':
-            f_open_normal(dic)
+            f_open_app(dic)
         elif case == 'protest':
             f_protest(dic)
         elif case == 'support':
@@ -195,29 +142,63 @@ def normal():
             f_votes(dic)
         elif case == 'trolls':
             f_trolls(dic)
-        # Koniec - zakladamy ze dane sa poprawne -> nie zwrocimy bledow
         else:
-            print ('{"status": "ERROR"}')
+            # Koniec - zakładamy ze dane jsony są poprawne -> nie zwrócimy błędów
+            print '{"status": "ERROR", "debug": "Niedozwolona zawartość json"}'
+
+# Funkcja czytająca w pętli na standardowym wejściu
+def from_standard_input():
+    while True:
+        try:
+            # Czytanie ze standardowego wejścia linii z jsonami w tekście
+            line = sys.stdin.readline()
+            if not line:
+                break
+            # Wczytanie tekstu i przetworzenie jsona
+            dic = json.loads(line)
+            # Case funkcji       
+            case = dic.keys()[0] 
+            if_case(dic, case)
+        except KeyboardInterrupt as err:
+            #Koniec pracy programu - przerwanie użytkownika
+            break
+        except Exception as err:
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]      
+            print err
+            break
+
+# Czytanie z pliku wejściowego (flaga --f)
+def from_file():
+    # Przetwarzanie linijek pliku wejściowego
+    for line in args.f[0]:
+        try:
+            # Wczytanie jsona
+            dic = json.loads(line)
+            # Case funkcji       
+            case = dic.keys()[0]
+            if_case(dic, case)
+        except Exception as err:
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]   
+            break
 
 
-# Wywolanie main
-# Parser argumentow
-parser = argparse.ArgumentParser(description='System Zarzadzania Partia Polityczna')
-parser.add_argument("file", 
+# Przygotowanie parsera argumentów
+parser = argparse.ArgumentParser(description='System Zarządzania Partią Polityczną')
+parser.add_argument("--f", 
                    type=file,
-                   help="wymagane: pobieranie wierszy json zawartych w pliku")
+                   nargs=1, 
+                   help="Flaga wywołania z pliku, wymaga argumentu w postaci ścieżki pliku z danymi json")
 parser.add_argument("--init", 
                    action="store_true", 
-                   help="pierwsze wywolanie")
+                   help="Flaga pierwszego wywołania")
 args = parser.parse_args()
-# Rozpoznanie flagi
-if args.init:
-    initialize()
+
+# Jeżeli flaga --f => czytaj z pliku na starcie
+if args.f:
+    from_file()
+    from_standard_input()
 else:
-    normal()
-# Koniec open <- zakonczenie cursora i connect
-cur.close()
-conn.close()
+    from_standard_input()
 
 
 
