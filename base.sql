@@ -2,7 +2,6 @@
 --DROP SEQUENCE global_serial;
 
 -- CZYSZCZENIE 
-
  drop table if exists "global_ids" cascade;
  drop table if exists "member" cascade;
  drop table if exists "authority" cascade;
@@ -39,7 +38,7 @@ CREATE TABLE vote (
   
 CREATE TABLE project (
   ID            bigint NOT NULL, 
-  creation_date timestamp NOT NULL, 
+  --creation_date timestamp NOT NULL, 
   authorityID   bigint NOT NULL, 
   PRIMARY KEY (ID));
   
@@ -50,7 +49,7 @@ CREATE TABLE authority (
 CREATE TABLE action (
   ID             bigint NOT NULL, 
   type           varchar(255) NOT NULL, 
-  action_date    timestamp NOT NULL, 
+  --action_date    timestamp NOT NULL, 
   memberID       bigint NOT NULL, 
   projectID      bigint NOT NULL, 
   positive_votes bigint DEFAULT 0 NOT NULL, 
