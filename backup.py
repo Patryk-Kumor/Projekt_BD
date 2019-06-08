@@ -280,11 +280,9 @@ def vote(for_or_against, member, action):
         krotka = find_action(action)
         if krotka:
             try:
-                if for_or_against == 1: boolean = True
-                else: boolean = False
                 # Znajdujemy akcję (zawiera info o autorze akcji)
                 # Tu już wiemy że i action i member autor istnieją
-                cur.execute("INSERT INTO vote (value, memberID, actionID) VALUES (%s, %s, %s);", (boolean, member, action))
+                cur.execute("INSERT INTO vote (memberID, actionID) VALUES (%s, %s);", (member, action))
                 ### Dodajemy wartości z vote w odpodnie pola w action
                 if for_or_against == 1: cur.execute("UPDATE action SET positive_votes = positive_votes + 1 WHERE id = %s;", (action,))
                 if for_or_against == -1: cur.execute("UPDATE action SET negative_votes = negative_votes + 1 WHERE id = %s;", (action,))
@@ -294,8 +292,8 @@ def vote(for_or_against, member, action):
                 if for_or_against == -1: cur.execute("UPDATE member SET action_ratio = action_ratio + 1 WHERE id = %s;", (krotka[0],))
                 ### Dodajemy do sumarycznej liczby głosów membera który głosuje 
                 ###
-                ##if for_or_against == 1: cur.execute("UPDATE member SET positive_votes = positive_votes + 1 WHERE id = %s;", (member,))
-                ##if for_or_against == -1: cur.execute("UPDATE member SET negative_votes = negative_votes + 1 WHERE id = %s;", (member,))
+                if for_or_against == 1: cur.execute("UPDATE member SET positive_votes = positive_votes + 1 WHERE id = %s;", (member,))
+                if for_or_against == -1: cur.execute("UPDATE member SET negative_votes = negative_votes + 1 WHERE id = %s;", (member,))
                 return 1
             except Exception as err:
                 print err
@@ -392,11 +390,33 @@ def format_fetch(wynik):
 def f_actions(arg):
     if authorize_leader(arg['actions']['member'], arg['actions']['password'], arg['actions']['timestamp']):
         ### DALSZE POBIERANIE KROTEK
+        if 'type' in arg['actions']:
+            if 'project' in  arg['actions']:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                WHERE projectID = %s AND type = %s ORDER BY id;""" 
+                            (arg['actions']['project'], arg['actions']['type']))
+            elif 'authority' in  arg['actions']:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                WHERE authorityID = %s AND type = %s ORDER BY id;""" 
+                            (arg['actions']['authority'], arg['actions']['type']))                
+            else:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                WHERE type = %s ORDER BY id;""" 
+                            (arg['actions']['type'],))  
+        else:
+            if 'project' in  arg['actions']:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                WHERE projectID = %s ORDER BY id;""" 
+                            (arg['actions']['project'], ))
+            elif 'authority' in  arg['actions']:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                WHERE authorityID = %s ORDER BY id;""" 
+                            (arg['actions']['authority'], ))                
+            else:
+                cur.execute("""SELECT id, type, projectID, authorityID, positive_votes, negative_votes FROM action 
+                                ORDER BY id;""" )
         ###
-        
-
-
-        wynik = []
+        wynik = ''
         print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)            
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
@@ -407,52 +427,28 @@ def f_projects(arg):
         ### DALSZE POBIERANIE KROTEK
             
         ###
-        wynik = []
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
-        ###
+        print "projects"
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
-def helper_votes_tuple(tuples):
-    return (tuples[0], tuples[1], tuples[2]-tuples[1])
 
 def f_votes(arg):
     if authorize_leader(arg['votes']['member'], arg['votes']['password'], arg['votes']['timestamp']):
+        ### DALSZE POBIERANIE KROTEK
         if 'action' in arg['votes']:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            WHERE action.id = %s
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['action'],))
+            ################ NIE TAK
+            cur.execute("SELECT id, positive_votes, negative_votes FROM member")
+            wynik = cur.fetchall()
         elif 'project' in arg['votes']:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            WHERE action.projectid = %s
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['project'],))
+            ################ NIE TAK
+            cur.execute("SELECT id, positive_votes, negative_votes FROM member")
+            wynik = cur.fetchall()
         else:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""")
-        wynik = cur.fetchall()
-        wynik = map(helper_votes_tuple, wynik)
+            cur.execute("SELECT id, positive_votes, negative_votes FROM member")
+            wynik = cur.fetchall()
         print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)            
+        ###
+        print "votes"
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'        
 
@@ -464,7 +460,7 @@ def f_trolls(arg):
         wynik = cur.fetchall()
         print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)     
     else:
-        print '{"status" : "ERROR", "status" : "błąd bazy danych - w update"}' 
+        print "błąd bazy danych"
 
 
 # Funkcja przyporządkowująca odpowiednie funkcje do dalszej obróbki jsonów 

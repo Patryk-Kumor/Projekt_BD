@@ -26,14 +26,15 @@ CREATE TABLE member (
   activity      bool NOT NULL, 
   password      varchar(128) NOT NULL, 
   activity_date timestamp NOT NULL, 
-  positive_votes bigint DEFAULT 0 NOT NULL, 
-  negative_votes bigint DEFAULT 0 NOT NULL, 
-  action_ratio   bigint DEFAULT 0 NOT NULL, 
+  --positive_votes bigint DEFAULT 0 NOT NULL, --SUMA GŁOSÓW ZA tego użytkownika
+  --negative_votes bigint DEFAULT 0 NOT NULL, --SUMA GŁOSÓW PRZECIW tego użytkownika
+  action_ratio   bigint DEFAULT 0 NOT NULL, --ratio głosów wobec projektów tego użytkownika (jeśli dodatnie -> więcej jest downvotes) downvotes - upvotes 
+  action_up   bigint DEFAULT 0 NOT NULL, --ratio głosów wobec projektów tego użytkownika (jeśli dodatnie -> więcej jest upvotes)
   PRIMARY KEY (ID));
   
 CREATE TABLE vote (
   --ID        bigint NOT NULL, 
-  --value     bool NOT NULL, 
+  value     bool NOT NULL, 
   --vote_date timestamp NOT NULL, 
   memberID  bigint NOT NULL, 
   actionID  bigint NOT NULL
