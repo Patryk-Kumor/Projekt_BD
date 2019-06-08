@@ -393,11 +393,42 @@ def f_actions(arg):
     if authorize_leader(arg['actions']['member'], arg['actions']['password'], arg['actions']['timestamp']):
         ### DALSZE POBIERANIE KROTEK
         ###
-        
-
-
-        wynik = []
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)            
+        try:
+            if 'type' in arg['actions']:
+                if 'project' in arg['actions']:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    WHERE action.type = %s AND project.id = %s
+                                    ORDER BY action.id;""", (arg['actions']['type'],arg['actions']['project']) )
+                elif 'authority' in arg['actions']:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    WHERE action.type = %s AND project.authorityID = %s
+                                    ORDER BY action.id;""", (arg['actions']['type'],arg['actions']['authority']) )
+                else:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    WHERE action.type = %s
+                                    ORDER BY action.id;""", (arg['actions']['type'],))
+            else:
+                if 'project' in arg['actions']:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    WHERE project.id = %s
+                                    ORDER BY action.id;""", (arg['actions']['project'],) )
+                elif 'authority' in arg['actions']:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    WHERE project.authorityID = %s
+                                    ORDER BY action.id;""", (arg['actions']['authority'],) )
+                else:
+                    cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
+                                    JOIN project ON(action.projectID = project.id)
+                                    ORDER BY action.id;""")
+            wynik = cur.fetchall()
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik) 
+        except Exception as err:
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
@@ -405,54 +436,63 @@ def f_actions(arg):
 def f_projects(arg):
     if authorize_leader(arg['projects']['member'], arg['projects']['password'], arg['projects']['timestamp']):
         ### DALSZE POBIERANIE KROTEK
-            
-        ###
-        wynik = []
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
-        ###
+        try:
+            if 'authority' in arg['projects']:
+                cur.execute("SELECT id, authorityID FROM project WHERE authorityID = %s ORDER BY id;", (arg['projects']['authority'],))
+            else:
+                cur.execute("SELECT id, authorityID FROM project ORDER BY id;")
+            wynik =  cur.fetchall()
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
+        except Exception as err:
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
+
 
 def helper_votes_tuple(tuples):
     return (tuples[0], tuples[1], tuples[2]-tuples[1])
 
+
 def f_votes(arg):
     if authorize_leader(arg['votes']['member'], arg['votes']['password'], arg['votes']['timestamp']):
-        if 'action' in arg['votes']:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            WHERE action.id = %s
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['action'],))
-        elif 'project' in arg['votes']:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            WHERE action.projectid = %s
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['project'],))
-        else:
-            cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
-                            FROM MEMBER as mem LEFT JOIN
-                            (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
-                            FROM member
-                                LEFT JOIN vote ON(member.id = vote.memberID)
-                                LEFT JOIN action ON(vote.actionid = action.id)
-                                LEFT JOIN project ON(action.projectid = project.id)
-                            ) as foo ON(mem.id = foo.id)
-                            GROUP BY mem.id ORDER BY mem.id;""")
-        wynik = cur.fetchall()
-        wynik = map(helper_votes_tuple, wynik)
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)            
+        try:
+            if 'action' in arg['votes']:
+                cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
+                                FROM MEMBER as mem LEFT JOIN
+                                (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
+                                FROM member
+                                    LEFT JOIN vote ON(member.id = vote.memberID)
+                                    LEFT JOIN action ON(vote.actionid = action.id)
+                                    LEFT JOIN project ON(action.projectid = project.id)
+                                WHERE action.id = %s
+                                ) as foo ON(mem.id = foo.id)
+                                GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['action'],))
+            elif 'project' in arg['votes']:
+                cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
+                                FROM MEMBER as mem LEFT JOIN
+                                (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
+                                FROM member
+                                    LEFT JOIN vote ON(member.id = vote.memberID)
+                                    LEFT JOIN action ON(vote.actionid = action.id)
+                                    LEFT JOIN project ON(action.projectid = project.id)
+                                WHERE action.projectid = %s
+                                ) as foo ON(mem.id = foo.id)
+                                GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['project'],))
+            else:
+                cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
+                                FROM MEMBER as mem LEFT JOIN
+                                (SELECT member.id, vote.value, action.id as actionid, project.id as projectid, project.authorityid as authorityid
+                                FROM member
+                                    LEFT JOIN vote ON(member.id = vote.memberID)
+                                    LEFT JOIN action ON(vote.actionid = action.id)
+                                    LEFT JOIN project ON(action.projectid = project.id)
+                                ) as foo ON(mem.id = foo.id)
+                                GROUP BY mem.id ORDER BY mem.id;""")
+            wynik = cur.fetchall()
+            wynik = map(helper_votes_tuple, wynik)
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)   
+        except Exception as err:  
+            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]       
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'        
 

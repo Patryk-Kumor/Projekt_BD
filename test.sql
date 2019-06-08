@@ -9,8 +9,14 @@ FROM member
 ) as foo ON(mem.id = foo.id)
 GROUP BY mem.id ORDER BY mem.id;
 
+
+
 SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
 JOIN project ON(action.projectID = project.id)
 --WHERE
 ORDER BY action.id;
 
+
+
+SELECT id, authorityID FROM project
+ORDER BY id;

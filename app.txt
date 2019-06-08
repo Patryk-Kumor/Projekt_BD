@@ -7,4 +7,12 @@
 { "votes": { "timestamp": 1557475705, "password": "abc", "member": 1}}
 { "trolls": { "timestamp": 1557477055 }}
 { "actions": { "timestamp": 1557475705, "password": "abc", "member": 1}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1, "type" : "support"}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1, "type" : "support", "project" : 500}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1, "type" : "support", "authority" : 10000}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1, "project" : 500}}
+{ "actions": { "timestamp": 1557475705, "password": "abc", "member": 1, "authority" : 10000}}
 { "projects": { "timestamp": 1557475705, "password": "abc", "member": 1}}
+{ "projects": { "timestamp": 1557475705, "password": "abc", "member": 1, "authority" : 10000}}
+{ "projects": { "timestamp": 1557475705, "password": "abc", "member": 1, "project" : 500}}
