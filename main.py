@@ -229,7 +229,7 @@ def f_protest(arg):
             print '{"status" : "OK"}'
         else: 
             conn.rollback()
-            print '{"status" : "ERROR", "debug" : "Nie można dodać projektu"}'
+            print '{"status" : "ERROR", "debug" : "Nie można dodać akcji"}'
     else:
         conn.rollback()
 
@@ -246,34 +246,96 @@ def f_support(arg):
             print '{"status" : "OK"}'
         else: 
             conn.rollback()
-            print '{"status" : "ERROR", "debug" : "Nie można dodać projektu"}'
+            print '{"status" : "ERROR", "debug" : "Nie można dodać akcji"}'
     else:
         conn.rollback()
+
+
+# Sprawdzamy czy member już oddał głos na action
+def find_vote(member, action):
+    cur.execute("SELECT * FROM vote WHERE memberID = %s AND actionID = %s", (member, action))
+    wynik = len(cur.fetchall())
+    return wynik == 1
+
+
+# Szukamy danej akcji i zwracamy membera który ją stworzył
+def find_action(action):
+    cur.execute("SELECT memberID FROM action WHERE id = %s", (action,))
+    wynik = cur.fetchall()
+    if len(wynik) == 1:
+        return wynik[0]
+    else:
+        return None
+
+
+# Funkcja oddająca głos przez użytkownika
+def vote(for_or_against, member, action):
+    # Sprawdzamy czy można oddać głos, oddajemy głos
+    # Dodajemy wynik głosowania do sumy głosów w action
+    # Dodajemy do ratio użytkownika który stworzył action
+    if find_vote(member, action):
+        # Jeśli głos już oddano, nie można oddać dalej głosu
+        return 0
+    else:
+        krotka = find_action(action)
+        if krotka:
+            try:
+                # Znajdujemy akcję (zawiera info o autorze akcji)
+                # Tu już wiemy że i action i member autor istnieją
+                cur.execute("INSERT INTO vote (memberID, actionID) VALUES (%s, %s);", (member, action))
+                ### Dodajemy wartości z vote w odpodnie pola w action
+                if for_or_against == 1: cur.execute("UPDATE action SET positive_votes = positive_votes + 1 WHERE id = %s;", (action,))
+                if for_or_against == -1: cur.execute("UPDATE action SET negative_votes = negative_votes + 1 WHERE id = %s;", (action,))
+                ### Dodajemy w ratio autora akcji
+                ###
+                if for_or_against == 1: cur.execute("UPDATE member SET action_ratio = action_ratio + 1 WHERE id = %s;", (krotka[0],))
+                if for_or_against == -1: cur.execute("UPDATE member SET action_ratio = action_ratio - 1 WHERE id = %s;", (krotka[0],))
+                ### Dodajemy do sumarycznej liczby głosów membera który głosuje 
+                ###
+                if for_or_against == 1: cur.execute("UPDATE member SET positive_votes = positive_votes + 1 WHERE id = %s;", (member,))
+                if for_or_against == -1: cur.execute("UPDATE member SET negative_votes = negative_votes + 1 WHERE id = %s;", (member,))
+                return 1
+            except Exception as err:
+                print err
+                return 0
+        else:
+            #Taka akcja nie istnieje
+            return 0
+    return 0
 
 
 def f_upvote(arg):
     if authorize_or_create_member(arg['upvote']['member'], arg['upvote']['password'], arg['upvote']['timestamp']):  
         ### DALSZE DODAWANIE GŁOSU ZA
-        conn.commit()
-        print 'upvote'
+        if vote(1, arg['upvote']['member'], arg['upvote']['action']):
+            conn.commit()
+            print '{"status" : "OK"}'
+        else:
+            conn.rollback()   
+            print '{"status" : "ERROR"}'
     else:
-        conn.rollback()
+        conn.rollback()   
 
 
 def f_downvote(arg):
     if authorize_or_create_member(arg['downvote']['member'], arg['downvote']['password'], arg['downvote']['timestamp']):  
-        ### DALSZE DODAWANIE GŁOSU PRZECIW
-        conn.commit()
-        print 'downvote'
+        ### DALSZE DODAWANIE GŁOSU ZA
+        if vote(-1, arg['downvote']['member'], arg['downvote']['action']):
+            conn.commit()
+            print '{"status" : "OK"}'
+        else:
+            conn.rollback()   
+            print '{"status" : "ERROR"}'
     else:
-        conn.rollback()
+        conn.rollback() 
 
 
-# Funkcja sprawdzająca leadera
+# Funkcja sprawdzająca leadera (tylko obecność, czy_aktywny i hasło) -> w reszcie funkcji będzie sprawdzana aktwność na całej tabeli member(więc tu nie wyliczam różnicy)
 def authorize_leader(member, password, timestamp):
     mem = check_member(member, password, timestamp)
     return 0
 
+def skan 
 
 def f_actions(arg):
     print ("actions") 

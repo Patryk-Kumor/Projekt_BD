@@ -26,15 +26,19 @@ CREATE TABLE member (
   activity      bool NOT NULL, 
   password      varchar(128) NOT NULL, 
   activity_date timestamp NOT NULL, 
+  positive_votes bigint DEFAULT 0 NOT NULL, 
+  negative_votes bigint DEFAULT 0 NOT NULL, 
+  action_ratio   bigint DEFAULT 0 NOT NULL, 
   PRIMARY KEY (ID));
   
 CREATE TABLE vote (
-  ID        bigint NOT NULL, 
-  value     bool NOT NULL, 
-  vote_date timestamp NOT NULL, 
+  --ID        bigint NOT NULL, 
+  --value     bool NOT NULL, 
+  --vote_date timestamp NOT NULL, 
   memberID  bigint NOT NULL, 
-  actionID  bigint NOT NULL, 
-  PRIMARY KEY (ID));
+  actionID  bigint NOT NULL
+  --PRIMARY KEY (ID)
+);
   
 CREATE TABLE project (
   ID            bigint NOT NULL, 
@@ -57,14 +61,16 @@ CREATE TABLE action (
   PRIMARY KEY (ID));
   
 
-ALTER TABLE vote ADD CONSTRAINT "member can vote" FOREIGN KEY (memberID) REFERENCES member (ID);
+
 ALTER TABLE project ADD CONSTRAINT "authority owns projects" FOREIGN KEY (authorityID) REFERENCES authority (ID);
 ALTER TABLE action ADD CONSTRAINT " member has action" FOREIGN KEY (memberID) REFERENCES member (ID);
 ALTER TABLE action ADD CONSTRAINT "project has actions" FOREIGN KEY (projectID) REFERENCES project (ID);
+ALTER TABLE vote ADD CONSTRAINT "member can vote" FOREIGN KEY (memberID) REFERENCES member (ID);
 ALTER TABLE vote ADD CONSTRAINT "votes for action" FOREIGN KEY (actionID) REFERENCES action (ID);
 
 
 CREATE user app WITH encrypted password 'qwerty';
+
 
 GRANT INSERT ON global_ids TO app; 
 GRANT INSERT ON member TO app; 
