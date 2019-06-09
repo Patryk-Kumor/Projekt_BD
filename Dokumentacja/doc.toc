@@ -1,0 +1,8 @@
+\babel@toc {polish}{}
+\contentsline {section}{\numberline {1}Uruchomienie programu i potrzebne pakiety}{3}
+\contentsline {section}{\numberline {2}Model fizyczny}{4}
+\contentsline {section}{\numberline {3}Implementacja}{5}
+\contentsline {subsection}{\numberline {3.1} A }{5}
+\contentsline {paragraph}{ a }{5}
+\contentsline {subsection}{\numberline {3.2} B }{5}
+\contentsline {paragraph}{ b }{5}
