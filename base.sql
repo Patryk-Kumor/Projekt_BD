@@ -1,7 +1,14 @@
---CREATE SEQUENCE global_serial MINVALUE 0 START 0;
---DROP SEQUENCE global_serial;
+/*
+#
+#   LOGOWANIE W POSTGRESIE:
+#   psql init -h 127.0.0.1 -d student
+#
+#   psql app -h 127.0.0.1 -d student
+#
+*/
 
--- CZYSZCZENIE 
+
+-- CZYSZCZENIE POPRZEDNIEGO INITA
  drop table if exists "global_ids" cascade;
  drop table if exists "member" cascade;
  drop table if exists "authority" cascade;
@@ -10,7 +17,7 @@
  drop table if exists "project" cascade;
  drop role  if exists app;
  drop extension if exists pgcrypto;
--- RESZTA
+--
 
 
 CREATE EXTENSION pgcrypto;
@@ -26,24 +33,17 @@ CREATE TABLE member (
   activity      bool NOT NULL, 
   password      varchar(128) NOT NULL, 
   activity_date timestamp NOT NULL, 
-  --positive_votes bigint DEFAULT 0 NOT NULL, --SUMA GŁOSÓW ZA tego użytkownika
-  --negative_votes bigint DEFAULT 0 NOT NULL, --SUMA GŁOSÓW PRZECIW tego użytkownika
-  action_ratio   bigint DEFAULT 0 NOT NULL, --ratio głosów wobec projektów tego użytkownika (jeśli dodatnie -> więcej jest downvotes) downvotes - upvotes 
-  action_up   bigint DEFAULT 0 NOT NULL, --ratio głosów wobec projektów tego użytkownika (jeśli dodatnie -> więcej jest upvotes)
+  action_ratio   bigint DEFAULT 0 NOT NULL, 
+  action_up   bigint DEFAULT 0 NOT NULL, 
   PRIMARY KEY (ID));
   
 CREATE TABLE vote (
-  --ID        bigint NOT NULL, 
   value     bool NOT NULL, 
-  --vote_date timestamp NOT NULL, 
   memberID  bigint NOT NULL, 
-  actionID  bigint NOT NULL
-  --PRIMARY KEY (ID)
-);
+  actionID  bigint NOT NULL);
   
 CREATE TABLE project (
   ID            bigint NOT NULL, 
-  --creation_date timestamp NOT NULL, 
   authorityID   bigint NOT NULL, 
   PRIMARY KEY (ID));
   
@@ -54,13 +54,11 @@ CREATE TABLE authority (
 CREATE TABLE action (
   ID             bigint NOT NULL, 
   type           varchar(255) NOT NULL, 
-  --action_date    timestamp NOT NULL, 
   memberID       bigint NOT NULL, 
   projectID      bigint NOT NULL, 
   positive_votes bigint DEFAULT 0 NOT NULL, 
   negative_votes bigint DEFAULT 0 NOT NULL, 
   PRIMARY KEY (ID));
-  
 
 
 ALTER TABLE project ADD CONSTRAINT "authority owns projects" FOREIGN KEY (authorityID) REFERENCES authority (ID);
@@ -71,7 +69,6 @@ ALTER TABLE vote ADD CONSTRAINT "votes for action" FOREIGN KEY (actionID) REFERE
 
 
 CREATE user app WITH encrypted password 'qwerty';
-
 
 GRANT INSERT ON global_ids TO app; 
 GRANT INSERT ON member TO app; 

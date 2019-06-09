@@ -5,19 +5,11 @@ import json
 import sys
 
 
-#
-#   LOGOWANIE W POSTGRESIE:
-#   psql init -h 127.0.0.1 -d student
-#
-#   psql app -h 127.0.0.1 -d student
-#
-
-
-# Pierwsze uruchomienie programu
+# Funkcja przetwarzająca jsona <open> podczas pierwszego uruchomienia programu
 def f_open_init(arg):
-    # Dane dostępowe do bazy danych
     try:
         # Ustanowienie połączenia między bazą danych
+    	# Dane dostępowe są pobrane z obiektu json
         global conn
         conn = psycopg2.connect(host="localhost", port="5432",
                                 dbname=arg['open']['database'],
@@ -28,23 +20,24 @@ def f_open_init(arg):
         cur = conn.cursor()
         # Pobieranie zawartości z pliku .sql
         database_create = open('base.sql','r') 
-        # Execute poleceń tworzących niezbęde tabele i role z pliku .sql
+        # Execute poleceń tworzących niezbęde tabele, wiązania i role z pliku .sql
         cur.execute(database_create.read())
-        # Commit zmian z .sql
+        # Commit zmian w bazie danych
         conn.commit()
         print '{"status" : "OK"}'
     except Exception as err:
         # Rollback w przypadku błędów w pliku .sql
         conn.rollback()
-        # Gdy open się nie powiedzie - kończymy program
+        # Gdy open się nie powiedzie - kończymy cały program
         print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
         sys.exit(0)  
 
 
-# Kolejne uruchomienia programu
+# Funkcja przetwarzająca jsona <open> podczas kolejnych uruchomień programu
 def f_open_app(arg):
     try:
         # Ustanowienie połączenia między bazą danych
+    	# Dane dostępowe są pobrane z obiektu json
         global conn
         conn = psycopg2.connect(host="localhost", port="5432",
                                 dbname=arg['open']['database'],
@@ -55,7 +48,7 @@ def f_open_app(arg):
         cur = conn.cursor()
         print '{"status" : "OK"}'
     except Exception as err:
-        # Gdy open się nie powiedzie - kończymy program
+        # Gdy open się nie powiedzie - kończymy cały program
         print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
         sys.exit(0)  
 
@@ -76,7 +69,7 @@ def add_member(member, password, timestamp, is_leader):
                 (member, is_leader, password, timestamp, member))
 
 
-# Funkcja dodająca leaderów
+# Funkcja przetwarzająca jsona <leader>
 def f_leader(arg):
     # Sprawdzamy czy istnieje taki member/ czy istnieje gdzieś takie ID
     if check_id(arg['leader']['member']): 
@@ -94,14 +87,18 @@ def f_leader(arg):
         print '{"status" : "ERROR",\n "debug" : "ID jest już używany" }'   
 
 
-# Funkcja sprawdzająca czy istnieje member o danym id (Jeśli istnieje -> zwracamy krotkę (poprawność_hasła, aktywność, różnica w czasie aktywności, czy_leader). Jeśli nie -> zwracamy None)
-# Sprawdzamy tu także poprawność hasła
-# Wyciągamy też tu aktywność membera, w tym różnicę pomiędzy czasami aktywności
-# Dodatkowo - czy_leader, trzyma informację o byciu leaderem
-def check_member(id_num, password, timestamp):                        ### \/ na pewno tak? \/ ###
-    cur.execute("SELECT password = crypt(%s, password), activity, (to_timestamp(%s) - activity_date), leader FROM member WHERE ID = %s;", (password, timestamp, id_num))    
+# Funkcja sprawdzająca czy istnieje member o danym id 
+# [Jeśli istnieje -> zwracamy krotkę (poprawność_hasła, aktywność, różnica w czasie aktywności, czy_leader),
+# Jeśli nie istnieje -> zwracamy None]
+# Zwracamy aktywność membera, oraz liczymy różnicę pomiędzy czasami aktywności 
+# (do późniejszego sprawdzenia czy należy już zamrozić użytkownika czy nie)
+def check_member(id_num, password, timestamp):                        
+    cur.execute("""SELECT password = crypt(%s, password), activity, (to_timestamp(%s) - activity_date), leader 
+                    FROM member WHERE ID = %s;""",
+                (password, timestamp, id_num))    
     krotki = cur.fetchall()
-    if len(krotki) == 1: #Musimy mieć dokładnie jedną krotkę (poprawność_hasła, aktywność, różnica w czasie, czy_leader) dotyczącą jednego membera
+    if len(krotki) == 1: 
+	# Musimy mieć dokładnie jedną krotkę (poprawność_hasła, aktywność, różnica w czasie, czy_leader) dotyczącą jednego membera
         return krotki[0]
     else:
         return None
@@ -183,14 +180,15 @@ def create_action(p_or_s, action, project, authority, member):
             try:
                 # Tworzenie akcji do istniejącego projektu
                 cur.execute("INSERT INTO global_ids (id) VALUES (%s);", (action,))
-                cur.execute("INSERT INTO action (id, type, memberID, projectID) VALUES (%s, %s, %s, %s);", (action, p_or_s, member, project))
+                cur.execute("INSERT INTO action (id, type, memberID, projectID) VALUES (%s, %s, %s, %s);",
+                            (action, p_or_s, member, project))
                 return 1
             except Exception:
                 return 0
         #Jeśli nie istnieje żaden projekt
         else:
             try:
-                # Dodajemy authority jeśli nie istniało żadne wcześniej oraz globalne id jest wolne
+                # Dodajemy authority jeśli nie istniało żadne wcześniej oraz gdy globalne id jest wolne
                 there_is_authority = find_authority(authority)
                 if not there_is_authority and check_id(authority): 
                     cur.execute("INSERT INTO global_ids (id) VALUES (%s);", (authority,))
@@ -204,8 +202,10 @@ def create_action(p_or_s, action, project, authority, member):
                     else:
                         return 0
                     # Tworzymy akcję do wcześniej utworzonego projektu 
-                    cur.execute("INSERT INTO global_ids (id) VALUES (%s);", (action,))
-                    cur.execute("INSERT INTO action (id, type, memberID, projectID) VALUES (%s, %s, %s, %s);", (action, p_or_s, member, project))
+                    cur.execute("INSERT INTO global_ids (id) VALUES (%s);", 
+                                (action,))
+                    cur.execute("INSERT INTO action (id, type, memberID, projectID) VALUES (%s, %s, %s, %s);", 
+                                (action, p_or_s, member, project))
                     return 1
                 else:
                     return 0
@@ -217,7 +217,7 @@ def create_action(p_or_s, action, project, authority, member):
     return 0      
 
 
-# Funkcja sprawdzająca membera, a później dodająca akcje protest
+# Funkcja przetwarzająca jsona <protest>
 def f_protest(arg):
     if authorize_or_create_member(arg['protest']['member'], arg['protest']['password'], arg['protest']['timestamp']):  
         # Opcjonalny argument authority
@@ -234,7 +234,7 @@ def f_protest(arg):
         conn.rollback()
 
 
-# Funkcja sprawdzająca membera, a później dodająca akcje support
+# Funkcja przetwarzająca jsona <support>
 def f_support(arg):
     if authorize_or_create_member(arg['support']['member'], arg['support']['password'], arg['support']['timestamp']):  
         # Opcjonalny argument authority
@@ -270,14 +270,12 @@ def find_action(action):
 
 # Funkcja oddająca głos przez użytkownika
 def vote(for_or_against, member, action):
-    # Sprawdzamy czy można oddać głos, oddajemy głos
-    # Dodajemy wynik głosowania do sumy głosów w action
-    # Dodajemy do ratio użytkownika który stworzył action
     if find_vote(member, action):
         # Jeśli głos już oddano, nie można oddać dalej głosu
         return 0
     else:
         krotka = find_action(action)
+        # Jeśli akcja została wcześniej poprawnie dodana
         if krotka:
             try:
                 if for_or_against == 1: boolean = True
@@ -285,20 +283,14 @@ def vote(for_or_against, member, action):
                 # Znajdujemy akcję (zawiera info o autorze akcji)
                 # Tu już wiemy że i action i member autor istnieją
                 cur.execute("INSERT INTO vote (value, memberID, actionID) VALUES (%s, %s, %s);", (boolean, member, action))
-                ### Dodajemy wartości z vote w odpodnie pola w action
+                # Dodajemy wartości z vote w odpodnie pola w action
                 if for_or_against == 1: cur.execute("UPDATE action SET positive_votes = positive_votes + 1 WHERE id = %s;", (action,))
                 if for_or_against == -1: cur.execute("UPDATE action SET negative_votes = negative_votes + 1 WHERE id = %s;", (action,))
-                ### Dodajemy w ratio autora akcji
-                ###
+                # Dodajemy wartość w ratio autora akcji
                 if for_or_against == 1: cur.execute("UPDATE member SET action_ratio = action_ratio - 1, action_up = action_up + 1 WHERE id = %s;", (krotka[0],))
                 if for_or_against == -1: cur.execute("UPDATE member SET action_ratio = action_ratio + 1 WHERE id = %s;", (krotka[0],))
-                ### Dodajemy do sumarycznej liczby głosów membera który głosuje 
-                ###
-                ##if for_or_against == 1: cur.execute("UPDATE member SET positive_votes = positive_votes + 1 WHERE id = %s;", (member,))
-                ##if for_or_against == -1: cur.execute("UPDATE member SET negative_votes = negative_votes + 1 WHERE id = %s;", (member,))
                 return 1
             except Exception as err:
-                print err
                 return 0
         else:
             #Taka akcja nie istnieje
@@ -306,9 +298,11 @@ def vote(for_or_against, member, action):
     return 0
 
 
+# Funkcja przetwarzająca jsona <upvote>
 def f_upvote(arg):
-    if authorize_or_create_member(arg['upvote']['member'], arg['upvote']['password'], arg['upvote']['timestamp']):  
-        ### DALSZE DODAWANIE GŁOSU ZA
+    # Jeżeli nie było błędów podczas autoryzacji membera/dodawania go
+    if authorize_or_create_member(arg['upvote']['member'], arg['upvote']['password'], arg['upvote']['timestamp']):
+        # Oddajemy głos 
         if vote(1, arg['upvote']['member'], arg['upvote']['action']):
             conn.commit()
             print '{"status" : "OK"}'
@@ -319,9 +313,11 @@ def f_upvote(arg):
         conn.rollback()   
 
 
+# Funkcja przetwarzająca jsona <downvote>
 def f_downvote(arg):
+    # Jeżeli nie było błędów podczas autoryzacji membera/dodawania go
     if authorize_or_create_member(arg['downvote']['member'], arg['downvote']['password'], arg['downvote']['timestamp']):  
-        ### DALSZE DODAWANIE GŁOSU ZA
+        # Oddajemy głos 
         if vote(-1, arg['downvote']['member'], arg['downvote']['action']):
             conn.commit()
             print '{"status" : "OK"}'
@@ -376,25 +372,33 @@ def authorize_leader(member, password, timestamp):
 # Sprawdzanie aktywności wszystkich użytkowników
 def skan(timestamp):
     try:
+        # Aktualizujemy zawartość acitivity jeśli interval pomiędzy datą ostatniej aktywności a naszym timestampem
+        # jest większy niż rok
         cur.execute("""UPDATE member SET activity = False 
                        WHERE activity_date <= (to_timestamp(%s) - interval '1 year'); """, (timestamp,))
+        # last_activity_date musi się zawierać w (timestamp - 1year) by użytkownik był nadal aktywny
         conn.commit()
         return 1    
     except Exception as err:
         return 0
     print "skanowanie"
 
+
+# Funkcja pomocnicza do formatowania stringu w "data"
 def format_fetch(wynik):
     wynik = str(map(list, wynik)) 
     wynik = wynik.replace('True', '"true"').replace('False', '"false"').replace('L', '')
     return wynik
 
+
+# Funkcja przetwarzająca jsona <actions>
 def f_actions(arg):
+    # Sprawdzamy istnienie leadera, jego hasło i aktywność
     if authorize_leader(arg['actions']['member'], arg['actions']['password'], arg['actions']['timestamp']):
-        ### DALSZE POBIERANIE KROTEK
-        ###
         try:
+            # Sprawdzamy czy użyto opcjonalnego argumentu 'type'
             if 'type' in arg['actions']:
+                # Sprawdzamy wszystkie pozostałe opcjonalne argumenty
                 if 'project' in arg['actions']:
                     cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
                                     JOIN project ON(action.projectID = project.id)
@@ -411,6 +415,7 @@ def f_actions(arg):
                                     WHERE action.type = %s
                                     ORDER BY action.id;""", (arg['actions']['type'],))
             else:
+                # Sprawdzamy wszystkie pozostałe opcjonalne argumenty (ale bez dodatkowego argumentu 'type')
                 if 'project' in arg['actions']:
                     cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
                                     JOIN project ON(action.projectID = project.id)
@@ -425,6 +430,7 @@ def f_actions(arg):
                     cur.execute("""SELECT action.id, action.type, action.projectID, project.authorityID, positive_votes, negative_votes FROM action
                                     JOIN project ON(action.projectID = project.id)
                                     ORDER BY action.id;""")
+            # Pobieramy i formatujemy krotki wynikowe
             wynik = cur.fetchall()
             print '{"status" : "OK", "data" : %s}' % format_fetch(wynik) 
         except Exception as err:
@@ -433,14 +439,17 @@ def f_actions(arg):
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
 
+# Funkcja przetwarzająca jsona <projects>
 def f_projects(arg):
+    # Sprawdzamy istnienie leadera, jego hasło i aktywność
     if authorize_leader(arg['projects']['member'], arg['projects']['password'], arg['projects']['timestamp']):
-        ### DALSZE POBIERANIE KROTEK
         try:
+            # Sprawdzamy dodatkowy argument 'authority'
             if 'authority' in arg['projects']:
                 cur.execute("SELECT id, authorityID FROM project WHERE authorityID = %s ORDER BY id;", (arg['projects']['authority'],))
             else:
                 cur.execute("SELECT id, authorityID FROM project ORDER BY id;")
+            # Pobieramy i formatujemy krotki wynikowe
             wynik =  cur.fetchall()
             print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
         except Exception as err:
@@ -449,13 +458,18 @@ def f_projects(arg):
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
 
+# Funckja pomocnicza przewarzająca krotki z bazy na krotki wynikowe
+# Potrzebujemy (id, upvotes, downvotes)
 def helper_votes_tuple(tuples):
     return (tuples[0], tuples[1], tuples[2]-tuples[1])
 
 
+# Funkcja przetwarzająca jsona <votes>
 def f_votes(arg):
+    # Sprawdzamy istnienie leadera, jego hasło i aktywność
     if authorize_leader(arg['votes']['member'], arg['votes']['password'], arg['votes']['timestamp']):
         try:
+            # Sprawdzamy opcjonalny argument 'action'
             if 'action' in arg['votes']:
                 cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
                                 FROM MEMBER as mem LEFT JOIN
@@ -467,6 +481,7 @@ def f_votes(arg):
                                 WHERE action.id = %s
                                 ) as foo ON(mem.id = foo.id)
                                 GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['action'],))
+            # Sprawdzamy opcjonalny argument 'project'
             elif 'project' in arg['votes']:
                 cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
                                 FROM MEMBER as mem LEFT JOIN
@@ -478,6 +493,7 @@ def f_votes(arg):
                                 WHERE action.projectid = %s
                                 ) as foo ON(mem.id = foo.id)
                                 GROUP BY mem.id ORDER BY mem.id;""", (arg['votes']['project'],))
+            # W przypadku braku opcjonalnych argumentów
             else:
                 cur.execute("""SELECT mem.id, sum(case when value then 1 else 0 end) as votes_for, count(value) as votes 
                                 FROM MEMBER as mem LEFT JOIN
@@ -488,6 +504,7 @@ def f_votes(arg):
                                     LEFT JOIN project ON(action.projectid = project.id)
                                 ) as foo ON(mem.id = foo.id)
                                 GROUP BY mem.id ORDER BY mem.id;""")
+            # Pobieramy i formatujemy krotki wynikowe
             wynik = cur.fetchall()
             wynik = map(helper_votes_tuple, wynik)
             print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)   
@@ -497,14 +514,17 @@ def f_votes(arg):
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'        
 
 
+# Funkcja przetwarzająca jsona <trolls>
 def f_trolls(arg):
-    if skan(arg['trolls']['timestamp']):
-        ### DALSZE POBIERANIE TROLLI                                                           
-        cur.execute("SELECT id, action_up, action_ratio + action_up, activity FROM member  WHERE action_ratio > 0   ORDER BY action_ratio desc, id;")
+    # Funkcja skan powinna zwrócić 1 gdy nie napotkano żadnych błędów podczas update'u w bazie_danych
+    if skan(arg['trolls']['timestamp']):                                                  
+        cur.execute("""SELECT id, action_up, action_ratio + action_up, activity FROM member
+                       WHERE action_ratio > 0 ORDER BY action_ratio desc, id;""")
+        # Pobieramy i formatujemy krotki wynikowe
         wynik = cur.fetchall()
         print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)     
     else:
-        print '{"status" : "ERROR", "status" : "błąd bazy danych - w update"}' 
+        print '{"status" : "ERROR", "status" : "błąd bazy danych - update"}' 
 
 
 # Funkcja przyporządkowująca odpowiednie funkcje do dalszej obróbki jsonów 
@@ -577,24 +597,26 @@ def from_file():
             break
 
 
-# Przygotowanie parsera argumentów
-parser = argparse.ArgumentParser(description='System Zarządzania Partią Polityczną')
-parser.add_argument("--f", 
-                   type=file,
-                   nargs=1, 
-                   help="Flaga wywołania z pliku, wymaga argumentu w postaci ścieżki pliku z danymi json")
-parser.add_argument("--init", 
-                   action="store_true", 
-                   help="Flaga pierwszego wywołania")
-args = parser.parse_args()
-
-
-# Jeżeli flaga --f => czytaj z pliku na starcie
-if args.f:
-    from_file()
-    from_standard_input()
-else:
-    from_standard_input()
+try:
+    # Przygotowanie parsera argumentów
+    parser = argparse.ArgumentParser(description='System Zarządzania Partią Polityczną')
+    parser.add_argument("--f", 
+                       type=file,
+                       nargs=1, 
+                       help="Flaga wywołania z pliku, wymaga argumentu w postaci ścieżki pliku z danymi json")
+    parser.add_argument("--init", 
+                       action="store_true", 
+                       help="Flaga pierwszego wywołania")
+    args = parser.parse_args()
+    # Jeżeli flaga --f => czytaj z pliku na starcie
+    if args.f:
+        from_file()
+        from_standard_input()
+    else:
+        from_standard_input()
+except Exception as err:
+    print "Program zakończył pracę. Napotkano na nieobsługiwany błąd:"
+    print err
 
 
 
