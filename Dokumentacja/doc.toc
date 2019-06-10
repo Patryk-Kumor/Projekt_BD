@@ -1,8 +1,13 @@
 \babel@toc {polish}{}
-\contentsline {section}{\numberline {1}Uruchomienie programu i potrzebne pakiety}{3}
-\contentsline {section}{\numberline {2}Model fizyczny}{4}
-\contentsline {section}{\numberline {3}Implementacja}{5}
-\contentsline {subsection}{\numberline {3.1} A }{5}
-\contentsline {paragraph}{ a }{5}
-\contentsline {subsection}{\numberline {3.2} B }{5}
-\contentsline {paragraph}{ b }{5}
+\contentsline {section}{\numberline {1}Potrzebne pakiety i uruchomienie programu}{3}
+\contentsline {subsection}{\numberline {1.1} Potrzebne pakiety }{3}
+\contentsline {subsection}{\numberline {1.2} Uruchomienie programu }{3}
+\contentsline {paragraph}{}{3}
+\contentsline {paragraph}{}{3}
+\contentsline {paragraph}{}{4}
+\contentsline {paragraph}{Zako\IeC {\'n}czenie pracy programu \newline }{4}
+\contentsline {section}{\numberline {2}Model fizyczny}{5}
+\contentsline {section}{\numberline {3}Implementacja}{6}
+\contentsline {subsection}{\numberline {3.1}Dok\IeC {\l }adny opis wej\IeC {\'s}cia }{6}
+\contentsline {subsection}{\numberline {3.2}INIT i kolejne wywo\IeC {\l }ania programu}{6}
+\contentsline {subsection}{\numberline {3.3} }{7}

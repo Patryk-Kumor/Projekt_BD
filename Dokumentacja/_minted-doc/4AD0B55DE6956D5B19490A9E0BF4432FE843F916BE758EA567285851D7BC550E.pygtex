@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{p}{\PYGZob{}}
+    \PYG{o}{\PYGZlt{}}\PYG{k+kd}{function}\PYG{o}{\PYGZgt{}} \PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n+nx}{value}\PYG{o}{\PYGZgt{}}        \PYG{c+c1}{// nazwa funkcji}
+    \PYG{p}{\PYGZob{}}
+        \PYG{o}{\PYGZlt{}}\PYG{n+nx}{arg1}\PYG{o}{\PYGZgt{}} \PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n+nx}{value}\PYG{o}{\PYGZgt{}}        \PYG{c+c1}{// argumenty funkcji}
+        \PYG{o}{\PYGZlt{}}\PYG{n+nx}{arg2}\PYG{o}{\PYGZgt{}}  \PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n+nx}{value}\PYG{o}{\PYGZgt{}}
+        \PYG{p}{.} \PYG{p}{.} \PYG{p}{.}
+        \PYG{o}{\PYGZlt{}}\PYG{n+nx}{argn}\PYG{o}{\PYGZgt{}}  \PYG{o}{:} \PYG{o}{\PYGZlt{}}\PYG{n+nx}{value}\PYG{o}{\PYGZgt{}}
+    \PYG{p}{\PYGZcb{}}
+\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

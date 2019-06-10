@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{p}{\PYGZob{}} \PYG{l+s+s2}{\PYGZdq{}open\PYGZdq{}}\PYG{o}{:} \PYG{p}{\PYGZob{}} \PYG{l+s+s2}{\PYGZdq{}database\PYGZdq{}}\PYG{o}{:} \PYG{l+s+s2}{\PYGZdq{}student\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}login\PYGZdq{}}\PYG{o}{:} \PYG{l+s+s2}{\PYGZdq{}app\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}password\PYGZdq{}}\PYG{o}{:} \PYG{l+s+s2}{\PYGZdq{}qwerty\PYGZdq{}}\PYG{p}{\PYGZcb{}\PYGZcb{}}
+\end{Verbatim}
