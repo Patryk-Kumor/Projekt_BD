@@ -289,6 +289,7 @@ Funkcja f\_support działa analogicznie wobec f\_protest
 
 \newpage
 \subsection{<upvote>/<downvote> w funkcji f\_upvote/f\_downvote }
+Funkcje obsługujące system głosowania członków na wcześniej zdefiniowane akcje.
 \paragraph{Opis działania: }
 Podobnie jak w poprzedniej funkcji dodawania protestu/supportu na starcie sprawdzamy członka, który ma zamiar wykonać działanie (w razie potrzeby dodając krotkę członka do bazy danych). \newline
 Następne w funkcji \textbf{vote} dodawana jest krotka do tabeli votes, która pomaga nam rozróżniać członków, którzy już oddali głos na dany projekt, następnie aktualizowane są wartości w tabelach member(autor akcji) i action. W member - aktualizowane wartości ratio autora akcji (w celu późniejszego szukania trolli), w action - suma głosów za/przeciw (w vote sprawdzamy także czy akcja jest uprzednio zdefiniowana). W przypadku gdy wszystko zakończyło się pomyślnie funkcja zwraca 1.
@@ -318,6 +319,7 @@ f\_downvote - analogicznie.
 
 \newpage
 \subsection{<project> w funkcji f\_projects }
+Funkcja, którą wywołać może tylko członek z uprawnieniami leadera. Zwraca listę wszystkich akcji wraz z typem, id projektu, id organu władzy oraz z liczbami głosów za i przeciw akcji.
 \paragraph{Opis działania: }
 Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
@@ -349,6 +351,8 @@ def f_projects(arg):
 
 \newpage
 \subsection{<votes> w funkcji f\_votes }
+Funkcja, którą wywołać może tylko członek z uprawnieniami leadera.
+Zwraca listę wszystkich członków (w tym tych, którzy do tej pory nie głosowali) wraz z sumarycznymi liczbami oddanych przez nich głosów za (<upvotes>) i przeciw (downvotes).
 \paragraph{Opis działania: }
 Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
@@ -431,6 +435,7 @@ def f_votes(arg):
 
 \newpage
 \subsection{<actions> w funkcji f\_actions }
+Funkcja, którą wywołać może tylko członek z uprawnieniami leadera. Zwraca listę wszystkich akcji wraz z typem, id projektu, id organu władzy oraz z liczbami głosów za i przeciw akcji.
 \paragraph{Opis działania: }
 Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
@@ -506,6 +511,7 @@ def f_actions(arg):
 
 \newpage
 \subsection{<trolls> w funkcji f\_trolls }
+Zwraca listę wszystkich użytkowników, którzy zaproponowali akcje mające sumarycznie więcej downvotes niż upvotes wg stanu na chwilę <timestamp>.
 \paragraph{Opis działania: }
 Na starcie wywołujemy funkcję wykonującą UPDATE aktywność = false w\,przypadku gdy timestamp na wejściu jest oddalony o ponad rok od daty ostatniej aktywności członka. Zwraca 1 gdy nie napotkano na żadne błędy bazy danych. Zadajemy zapytanie do bazy danych, po czym formatujemy krotki wynikowe.
 \begin{minted}{python}
