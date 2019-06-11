@@ -32,7 +32,7 @@ Program został napisany w Pythonie 2.7, z użyciem następujących bibliotek:
     \item psycopg2 
 \end{itemize}
 Wszystkie powyższe moduły, oprócz ostatniego - psycopg2 - powinny być dostarczone wraz z podstawową dystrybucją pythona. \newline
-Aby zainstalować psycopg2 należy skorzystać z PIP - package managera do\,języka python, w tym celu należy wykonać polecenie:
+Aby zainstalować psycopg2 należy skorzystać z PIP - package managera do\,\,języka python, w tym celu należy wykonać polecenie:
 \begin{minted}{shell}
     \$ pip install psycopg2
 \end{minted}
@@ -132,8 +132,8 @@ Obiekty json podawane na wejściu mają strukturę:
 {     
     <function> : <value>        // nazwa funkcji 
     {
-        <arg1> : <value>        // argumenty funkcji
-        <arg2>  : <value> 
+        <arg1> : <value>,        // argumenty funkcji
+        <arg2>  : <value>, 
         . . . 
         <argn>  : <value> 
     }
@@ -179,13 +179,13 @@ Wyjaśnienie oznaczenia we oznaczenia użytego we wszystkich funkcjach głównyc
 
 \newpage
 \subsection{<open> w funkcjach f\_open\_init i f\_open\_normal}
-Pierwsza z funkcji f\_open\_init przeznaczona jest do wykonania poleceń pierwszego jsona na wejściu wraz z wykrytą flagą -\,-init, funkcja ta dodatkowo jest odpowiedzialna za pobranie poleceń bazodanowych z pliku .sql:
+Pierwsza z funkcji f\_open\_init [przeznaczona jest do wykonania poleceń pierwszego jsona na wejściu] wraz z wykrytą flagą -\,-init, odpowiada za ustanowienie połączenia między bazą danych a\,naszym programem (dzięki rozszerzeniu psycopg2), funkcja ta dodatkowo jest odpowiedzialna za pobranie poleceń bazodanowych z pliku .sql. Funkcja f\_open\_normal jest odpowiadzialna tylko za ustanowienie połączenia z bazą danych.
 \paragraph{Opis działania: }
     Na początku należy ustanowić globalne połączenie z bazą danych,
     pobieramy dane logowania z obiektu json. Iniciujemy globalny
     kursor odpowiadający za wykonywanie poleceń bazodanowych. 
     Następnie pobieramy zawartość pliku .sql i wykonujemy execute 
-    poleceń towrzących niezbędne elementy bazy danych (wraz z użytkownikiem app).
+    poleceń towrzących niezbędne elementy bazy danych (wraz z rolą użytkownika app).
     Wykonujemy commit zmian w\,bazie danych, w przypadku wykrycia 
     jakiegokolwiek błędu cofamy wszystkie zmiany i zamykamy program.
 \begin{minted}{python}
@@ -202,9 +202,9 @@ def f_open_init(arg):
         cur.execute(database_create.read())
         conn.commit()
         print '{"status" : "OK"}'
-    except Exception as err:
+    except Exception:
         conn.rollback()
-        print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)
+        print '{"status" : "ERROR", "debug" : "Polecenie open się nie udało" }' 
         sys.exit(0)  
 \end{minted}
 Funkcja f\_open\_normal działa na takiej samej zasadzie, ale pomijamy tu pobieranie poleceń z pliku .sql (które powinny być już wcześniej wykonane)
@@ -216,9 +216,10 @@ Funkcja f\_open\_normal działa na takiej samej zasadzie, ale pomijamy tu pobier
 
 \newpage
 \subsection{<leader> w funkcji f\_leader}
+Funkcja dodająca leaderów do tabeli member (tylko przy wywołaniach -\,-init)
 \paragraph{Opis działania: }
 W funkcji pomocniczej \textbf{check\_id} poprzez zapytanie SELECT do bazy danych (wobec tabeli global\_ids) sprawdzamy czy dane nam w argumencie ID jest wolne do użycia.
-Jeśli jest wolne to wywołujemy funkcję \textbf{add\_member}, która odpowiada za INSERT krotki do bazy danych o podanych argumentach wejściowych w tabeli member oraz wpisaniu id do tabeli global\_ids 
+Jeśli jest wolne to wywołujemy funkcję \textbf{add\_member}, która odpowiada za INSERT krotki do bazy danych o podanych argumentach wejściowych w tabeli member oraz wpisaniu id nowego członka do tabeli global\_ids 
 (w\,celi kontroli argumentów kolejnych wywołań - unikalnego id).
 \begin{minted}{python}
 def f_leader(arg):
@@ -233,12 +234,12 @@ def f_leader(arg):
         except Exception as err:
             # Rollback jeśli coś poszło nie tak
             conn.rollback()
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)
+            print '{"status" : "ERROR", "debug" : "Nie można dodać członka (w funkcji leader)" }' 
     else: 
         print '{"status" : "ERROR",\n "debug" : "ID jest już używany" }'   
 \end{minted}
 
-W celu bezpiecznego przechowywania hasła używamy modułu pgcrypto prosto w bazie danych
+W celu bezpiecznego przechowywania hasła używamy modułu pgcrypto w bazie danych
 \begin{minted}{sql}
   crypt(%s, gen_salt('md5'))
 \end{minted}
@@ -251,10 +252,11 @@ W celu bezpiecznego przechowywania hasła używamy modułu pgcrypto prosto w baz
 
 \newpage
 \subsection{<protest>/<support> w funkcji f\_protest/f\_support}
+Funkcje dodające odpowienio akcję protestacyjne/sprzyjające do projektu (wcześniej zdefiniowanego lub tworząc go podczas działania funkcji)
 \paragraph{Opis działania: }
 Na starcie w \textbf{authorize\_or\_create\_member} dokonujemy autoryzacji użytkownika
-(jeśli istnieje, wpp dodajemy nową krotkę do bazy) sprawdzając jego hasło, potem jego aktywność (przy okazji aktualizując ją, jeżeli użytkownik powinien zostać zamrożony, lub wpp aktualizując ostatnią aktywność użytkownika za pomocą timestampa). \newline
-Jeśli podano opcjonalny argument 'authority' jest on pobierany lub wpp oznaczany jako None. Następnie argumenty są przekazywane do funkcji pomocniczej \textbf{authorize\_action}, która sprawdza wolne ID akcji po czym dodaje je (wraz z kontrolą poprawności ID, istnienia i poprawności projektu/authority etc.) - funkcja powinna zwrócić 1 w przypadku powodzenia wpp 0.\newline
+(jeśli istnieje, wpp dodajemy nową krotkę do bazy [wraz z kontrolą poprawności]) sprawdzając jego hasło, potem jego aktywność (przy okazji aktualizując ostatnią aktywność użytkownika za pomocą timestampa [o ile użytkownik nie powinien zostać zamrożony]). \newline
+Jeśli podano opcjonalny argument 'authority' jest on pobierany lub wpp oznaczany jako None. Następnie argumenty są przekazywane do funkcji pomocniczej \textbf{create\_action}, która sprawdza wolne ID akcji po czym dodaje je (także z kontrolą poprawności ID, istnienia oraz poprawności projektu/authority etc.) - funkcja powinna zwrócić 1 w przypadku powodzenia wpp 0.\newline
 Commit w przypadku powodzenia, rollback w przypadku niepowodzenia, tak jak w poprzedniej funkcji.
 \begin{minted}{python}
 def f_protest(arg):
@@ -289,7 +291,7 @@ Funkcja f\_support działa analogicznie wobec f\_protest
 \subsection{<upvote>/<downvote> w funkcji f\_upvote/f\_downvote }
 \paragraph{Opis działania: }
 Podobnie jak w poprzedniej funkcji dodawania protestu/supportu na starcie sprawdzamy członka, który ma zamiar wykonać działanie (w razie potrzeby dodając krotkę członka do bazy danych). \newline
-Następne w funkcji \textbf{vote} dodawana jest krotka do tabeli votes, która pomaga nam rozróżniać członków, którzy już oddali głos na dany projekt, następnie aktualizowane są wartości w tabelach member(autor akcji) i action. W member - aktualizowane wartości ratio autora akcji (w celu późniejszego szukania trolli), w action - suma głosów za/przeciw (W vote sprawdzamy także czy akcja jest uprzednio zdefiniowana). W przypadku gdy wszystko zakończyło się pomyślnie funkcja zwraca 1.
+Następne w funkcji \textbf{vote} dodawana jest krotka do tabeli votes, która pomaga nam rozróżniać członków, którzy już oddali głos na dany projekt, następnie aktualizowane są wartości w tabelach member(autor akcji) i action. W member - aktualizowane wartości ratio autora akcji (w celu późniejszego szukania trolli), w action - suma głosów za/przeciw (w vote sprawdzamy także czy akcja jest uprzednio zdefiniowana). W przypadku gdy wszystko zakończyło się pomyślnie funkcja zwraca 1.
 \begin{minted}{python}
 def f_upvote(arg):
     if authorize_or_create_member(arg['upvote']['member'],
@@ -317,7 +319,7 @@ f\_downvote - analogicznie.
 \newpage
 \subsection{<project> w funkcji f\_projects }
 \paragraph{Opis działania: }
-Sprawdzamy członka (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
+Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
 \begin{minted}{python}
 def f_projects(arg):
@@ -332,9 +334,9 @@ def f_projects(arg):
             else:
                 cur.execute("SELECT id, authorityID FROM project ORDER BY id;")
             wynik =  cur.fetchall()
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')
         except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 \end{minted}
@@ -348,7 +350,7 @@ def f_projects(arg):
 \newpage
 \subsection{<votes> w funkcji f\_votes }
 \paragraph{Opis działania: }
-Sprawdzamy członka (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
+Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
 \begin{minted}{python}
 def f_votes(arg):
@@ -409,9 +411,9 @@ def f_votes(arg):
                                 GROUP BY mem.id ORDER BY mem.id;""")
             wynik = cur.fetchall()
             wynik = map(helper_votes_tuple, wynik)
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)   
-        except Exception as err:  
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]       
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')  
+        except Exception:  
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'   
 \end{minted}
@@ -430,7 +432,7 @@ def f_votes(arg):
 \newpage
 \subsection{<actions> w funkcji f\_actions }
 \paragraph{Opis działania: }
-Sprawdzamy członka (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
+Sprawdzamy członka - leadera (w tym jego uprawienia leadera, hasło i aktywność) po czym zgodnie z opcjonalnymi argumentami funkcji votes wysyłamy zapytanie do bazy danych.
 Otrzymane krotki formatujemy tak by spełnić wymagania formatu wyjściowego po czym je zwracamy w\,obiekcie json. \newline
 \begin{minted}{python}
 def f_actions(arg):
@@ -487,9 +489,9 @@ def f_actions(arg):
                                     JOIN project ON(action.projectID = project.id)
                                     ORDER BY action.id;""")
             wynik = cur.fetchall()
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik) 
-        except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')
+        except Exception:
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'   
 \end{minted}
@@ -512,7 +514,8 @@ def f_trolls(arg):
         cur.execute("""SELECT id, action_up, action_ratio + action_up, activity FROM member
                        WHERE action_ratio > 0 ORDER BY action_ratio desc, id;""")
         wynik = cur.fetchall()
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)     
+        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace('True', '"true"')
+                                                                    .replace('False', '"false"')    
     else:
         print '{"status" : "ERROR", "status" : "błąd bazy danych - update"}' 
 \end{minted}

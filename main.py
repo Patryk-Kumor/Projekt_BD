@@ -25,11 +25,11 @@ def f_open_init(arg):
         # Commit zmian w bazie danych
         conn.commit()
         print '{"status" : "OK"}'
-    except Exception as err:
+    except Exception:
         # Rollback w przypadku błędów w pliku .sql
         conn.rollback()
         # Gdy open się nie powiedzie - kończymy cały program
-        print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+        print '{"status" : "ERROR", "debug" : "Polecenie open się nie udało - program kończy pracę" }' 
         sys.exit(0)  
 
 
@@ -47,9 +47,9 @@ def f_open_app(arg):
         global cur
         cur = conn.cursor()
         print '{"status" : "OK"}'
-    except Exception as err:
+    except Exception:
         # Gdy open się nie powiedzie - kończymy cały program
-        print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+        print '{"status" : "ERROR", "debug" : "Polecenie open się nie udało - program kończy pracę" }' 
         sys.exit(0)  
 
 
@@ -78,13 +78,13 @@ def f_leader(arg):
             add_member(arg['leader']['member'], arg['leader']['password'], arg['leader']['timestamp'], True)
             conn.commit()
             print '{"status" : "OK"}'
-        except Exception as err:
+        except Exception:
             # Rollback jeśli coś poszło nie tak
             conn.rollback()
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]  
+            print '{"status" : "ERROR", "debug" : "Nie można dodać członka (w funkcji leader)" }' 
     else: 
         # Jezeli znaleziono krotki - id jest juz zajete, więc nie można dodać takiego leadera
-        print '{"status" : "ERROR",\n "debug" : "ID jest już używany" }'   
+        print '{"status" : "ERROR", "debug" : "ID jest już używany" }'   
 
 
 # Funkcja sprawdzająca czy istnieje member o danym id 
@@ -118,7 +118,7 @@ def authorize_or_create_member(member, password, timestamp):
                 interval = mem[2].days
                 if interval > 365:
                     # User był aktywny - ale różnica większa niż rok (trzeba go uśpić)
-                    print '{"status" : "ERROR", "debug" : "Member jest nieaktywny"}'
+                    print '{"status" : "ERROR", "debug" : "Członek jest już nieaktywny"}'
                     return 0
                 else:
                     # User był aktwyny - i różnica mniejsza niż rok -> aktualizacja daty ostatniej aktywności
@@ -127,7 +127,7 @@ def authorize_or_create_member(member, password, timestamp):
                     return 1
             else:
                 # Nieaktwny (zamrożony) member
-                print '{"status" : "ERROR", "debug" : "Member jest nieaktywny"}'
+                print '{"status" : "ERROR", "debug" : "Członek jest nieaktywny"}'
                 return 0
         else:
             # Niepoprawne hasło
@@ -139,10 +139,10 @@ def authorize_or_create_member(member, password, timestamp):
             try:
                 add_member(member, password, timestamp, False) #false = bo nie jest to leader
                 return 1
-            except Exception as err:
+            except Exception :
                 # W przypadku braku możliwości dodania krotki w member, kończymy funkcję zewnętrzną
                 conn.rollback()
-                print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1] 
+                print '{"status" : "ERROR", "debug" : "Nie można dodać nowego członka" }'
                 return 0 
         else:
             # ID jest już gdzieś używane
@@ -301,7 +301,7 @@ def f_upvote(arg):
             print '{"status" : "OK"}'
         else:
             conn.rollback()   
-            print '{"status" : "ERROR"}'
+            print '{"status" : "ERROR", "debug" : "Nie można oddać głosu (za)"}'
     else:
         conn.rollback()   
 
@@ -316,7 +316,7 @@ def f_downvote(arg):
             print '{"status" : "OK"}'
         else:
             conn.rollback()   
-            print '{"status" : "ERROR"}'
+            print '{"status" : "ERROR", "debug" : "Nie można oddać głosu (przeciw)"}'
     else:
         conn.rollback() 
 
@@ -368,13 +368,12 @@ def skan(timestamp):
         return 1    
     except Exception as err:
         return 0
-    print "skanowanie"
 
 
 # Funkcja pomocnicza do formatowania stringu w "data"
 def format_fetch(wynik):
-    wynik = str(map(list, wynik)) 
-    wynik = wynik.replace('True', '"true"').replace('False', '"false"').replace('L', '')
+    wynik = str(map(list, wynik)).replace('L', '')
+    #wynik = wynik.replace('True', '"true"').replace('False', '"false"').replace('L', '')
     return wynik
 
 
@@ -419,9 +418,9 @@ def f_actions(arg):
                                     ORDER BY action.id;""")
             # Pobieramy i formatujemy krotki wynikowe
             wynik = cur.fetchall()
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik) 
-        except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')
+        except Exception:
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
@@ -438,9 +437,9 @@ def f_projects(arg):
                 cur.execute("SELECT id, authorityID FROM project ORDER BY id;")
             # Pobieramy i formatujemy krotki wynikowe
             wynik =  cur.fetchall()
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)
-        except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')
+        except Exception:
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'  
 
@@ -494,9 +493,9 @@ def f_votes(arg):
             # Pobieramy i formatujemy krotki wynikowe
             wynik = cur.fetchall()
             wynik = map(helper_votes_tuple, wynik)
-            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)   
-        except Exception as err:  
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]       
+            print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace("'", '"')
+        except Exception:  
+            print '{"status" : "ERROR", "debug" : "Błąd podczas zapytania bazodanowego" }' 
     else:
         print '{"status" : "ERROR", "debug" : "Błąd leadera"}'        
 
@@ -509,9 +508,9 @@ def f_trolls(arg):
                        WHERE action_ratio > 0 ORDER BY action_ratio desc, id;""")
         # Pobieramy i formatujemy krotki wynikowe
         wynik = cur.fetchall()
-        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik)     
+        print '{"status" : "OK", "data" : %s}' % format_fetch(wynik).replace('True', '"true"').replace('False', '"false"')    
     else:
-        print '{"status" : "ERROR", "status" : "błąd bazy danych - update"}' 
+        print '{"status" : "ERROR", "debug" : "błąd bazy danych - update aktywności"}' 
 
 
 # Funkcja przyporządkowująca odpowiednie funkcje do dalszej obróbki jsonów 
@@ -564,9 +563,8 @@ def from_standard_input():
         except KeyboardInterrupt as err:
             #Koniec pracy programu - przerwanie użytkownika
             break
-        except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]      
-            break
+        except Exception:
+            print '{"status" : "ERROR", "debug" : "Błąd json - prawdopodobny brak argumentu (lub niepoprawna zawartość)" }'    
 
 
 # Czytanie z pliku wejściowego (flaga --f)
@@ -579,31 +577,27 @@ def from_file():
             # Case funkcji       
             case = dic.keys()[0]
             if_case(dic, case)
-        except Exception as err:
-            print '{"status" : "ERROR",\n "debug" : "%s" }' % str(err)[0:-1]   
-            break
+        except Exception:
+            print '{"status" : "ERROR", "debug" : "Błąd json - prawdopodobny brak argumentu (lub niepoprawna zawartość)" }'    
+            
 
-
-try:
-    # Przygotowanie parsera argumentów
-    parser = argparse.ArgumentParser(description='System Zarządzania Partią Polityczną')
-    parser.add_argument("--f", 
+# Przygotowanie parsera argumentów
+parser = argparse.ArgumentParser(description='System Zarządzania Partią Polityczną')
+parser.add_argument("--f", 
                        type=file,
                        nargs=1, 
                        help="Flaga wywołania z pliku, wymaga argumentu w postaci ścieżki pliku z danymi json")
-    parser.add_argument("--init", 
+parser.add_argument("--init", 
                        action="store_true", 
                        help="Flaga pierwszego wywołania")
-    args = parser.parse_args()
-    # Jeżeli flaga --f => czytaj z pliku na starcie
-    if args.f:
+args = parser.parse_args()
+# Jeżeli flaga --f => czytaj z pliku na starcie
+if args.f:
         from_file()
         from_standard_input()
-    else:
+else:
         from_standard_input()
-except Exception as err:
-    print "Program zakończył pracę. Napotkano na nieobsługiwany błąd:"
-    print err
+
 
 
 

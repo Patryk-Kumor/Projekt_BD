@@ -11,9 +11,9 @@
             \PYG{k}{else}\PYG{p}{:}
                 \PYG{n}{cur}\PYG{o}{.}\PYG{n}{execute}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}SELECT id, authorityID FROM project ORDER BY id;\PYGZdq{}}\PYG{p}{)}
             \PYG{n}{wynik} \PYG{o}{=}  \PYG{n}{cur}\PYG{o}{.}\PYG{n}{fetchall}\PYG{p}{()}
-            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}, \PYGZdq{}data\PYGZdq{} : }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n}{format\PYGZus{}fetch}\PYG{p}{(}\PYG{n}{wynik}\PYG{p}{)}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}, \PYGZdq{}data\PYGZdq{} : }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n}{format\PYGZus{}fetch}\PYG{p}{(}\PYG{n}{wynik}\PYG{p}{)}\PYG{o}{.}\PYG{n}{replace}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZsq{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}\PYGZdq{}\PYGZsq{}}\PYG{p}{)}
         \PYG{k}{except} \PYG{n+ne}{Exception} \PYG{k}{as} \PYG{n}{err}\PYG{p}{:}
-            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{},}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{ \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZdq{} \PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{err}\PYG{p}{)[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}Błąd podczas zapytania bazodanowego\PYGZdq{} \PYGZcb{}\PYGZsq{}}
     \PYG{k}{else}\PYG{p}{:}
         \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}Błąd leadera\PYGZdq{}\PYGZcb{}\PYGZsq{}}
 \end{Verbatim}

@@ -11,7 +11,7 @@
         \PYG{k}{except} \PYG{n+ne}{Exception} \PYG{k}{as} \PYG{n}{err}\PYG{p}{:}
             \PYG{c+c1}{\PYGZsh{} Rollback jeśli coś poszło nie tak}
             \PYG{n}{conn}\PYG{o}{.}\PYG{n}{rollback}\PYG{p}{()}
-            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{},}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{ \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZdq{} \PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{err}\PYG{p}{)}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}Nie można dodać członka (w funkcji leader)\PYGZdq{} \PYGZcb{}\PYGZsq{}}
     \PYG{k}{else}\PYG{p}{:}
         \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{},}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{ \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}ID jest już używany\PYGZdq{} \PYGZcb{}\PYGZsq{}}
 \end{Verbatim}
