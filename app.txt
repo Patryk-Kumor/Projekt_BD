@@ -1,8 +1,26 @@
 { "open": { "database": "student", "login": "app", "password": "qwerty"}}
 { "protest": { "timestamp": 1557475700, "password": "123", "member": 3, "action":500, "project":5000, "authority":10000}}
-{ "support": { "timestamp": 1557475701, "password": "123", "member": 3, "action":600, "project":5000}}
+{ "protest": { "timestamp": 1557475701, "password": "123", "member": 3, "action":501, "project":5000, "authority":10000}}
+{ "protest": { "timestamp": 1557475702, "password": "123", "member": 3, "action":500, "project":5001, "authority":10000}}
+{ "protest": { "timestamp": 1557475703, "password": "123", "member": 3, "action":501, "project":5001, "authority":10000}}
+{ "protest": { "timestamp": 1557475702, "password": "123", "member": 3, "action":502, "project":5001, "authority":10000}}
+{ "protest": { "timestamp": 1557475703, "password": "123", "member": 3, "action":503, "project":5001, "authority":10000}}
+{ "support": { "timestamp": 1557475700, "password": "123", "member": 3, "action":510, "project":5010, "authority":10010}}
+{ "support": { "timestamp": 1557475701, "password": "123", "member": 3, "action":511, "project":5010, "authority":10010}}
+{ "support": { "timestamp": 1557475702, "password": "123", "member": 3, "action":510, "project":5011, "authority":10010}}
+{ "support": { "timestamp": 1557475703, "password": "123", "member": 3, "action":511, "project":5011, "authority":10010}}
+{ "support": { "timestamp": 1557475702, "password": "123", "member": 3, "action":512, "project":5011, "authority":10010}}
+{ "support": { "timestamp": 1557475703, "password": "123", "member": 3, "action":513, "project":5011, "authority":10010}}
 { "upvote": { "timestamp": 1557475702, "password": "asd", "member": 2, "action":500}}
 { "downvote": { "timestamp": 1557475703, "password": "abc", "member": 1, "action":500}}
-{ "downvote": { "timestamp": 1557475704, "password": "abc", "member": 1, "action":600}}
-{ "votes": { "timestamp": 1557475705, "password": "abc", "member": 1}}
-{ "trolls": { "timestamp": 1557477055 }}
+{ "downvote": { "timestamp": 1557475704, "password": "abc", "member": 3, "action":500}}
+{ "upvote": { "timestamp": 1557475702, "password": "asd", "member": 4, "action":500}}
+{ "downvote": { "timestamp": 1557475703, "password": "abc", "member": 5, "action":500}}
+{ "downvote": { "timestamp": 1557475704, "password": "abc", "member": 6, "action":500}}
+{ "upvote": { "timestamp": 1557475702, "password": "asd", "member": 7, "action":500}}
+{ "downvote": { "timestamp": 1557475703, "password": "abc", "member": 8, "action":500}}
+{ "downvote": { "timestamp": 1557475704, "password": "abc", "member": 9, "action":500}}
+{ "trolls" : { "timestamp": 1557475703 } }
+{ "upvote": { "timestamp": 1560207404, "password": "123", "member": 3, "action":500}}
+{ "trolls" : { "timestamp": 1591743453 } }
+{ "trolls" : { "timestamp": 1591829804 } }

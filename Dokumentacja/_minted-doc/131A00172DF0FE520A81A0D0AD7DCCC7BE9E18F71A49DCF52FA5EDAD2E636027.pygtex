@@ -1,0 +1,22 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{f\PYGZus{}protest}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{):}
+    \PYG{k}{if} \PYG{n}{authorize\PYGZus{}or\PYGZus{}create\PYGZus{}member}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}member\PYGZsq{}}\PYG{p}{],}
+                                  \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}password\PYGZsq{}}\PYG{p}{],}
+                                  \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}timestamp\PYGZsq{}}\PYG{p}{]):}
+        \PYG{k}{if} \PYG{l+s+s1}{\PYGZsq{}authority\PYGZsq{}} \PYG{o+ow}{in} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{]:}
+            \PYG{n}{authority} \PYG{o}{=} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}authority\PYGZsq{}}\PYG{p}{]}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{authority} \PYG{o}{=} \PYG{n+nb+bp}{None}
+        \PYG{k}{if} \PYG{n}{create\PYGZus{}action}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{,} \PYG{c+c1}{\PYGZsh{} analogicznie \PYGZsq{}support\PYGZsq{} w funkcji f\PYGZus{}support}
+                         \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}action\PYGZsq{}}\PYG{p}{],}
+                         \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}project\PYGZsq{}}\PYG{p}{],}
+                         \PYG{n}{authority}\PYG{p}{,}
+                         \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}protest\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}member\PYGZsq{}}\PYG{p}{]):}
+            \PYG{n}{conn}\PYG{o}{.}\PYG{n}{commit}\PYG{p}{()}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{conn}\PYG{o}{.}\PYG{n}{rollback}\PYG{p}{()}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}Nie można dodać akcji\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{conn}\PYG{o}{.}\PYG{n}{rollback}\PYG{p}{()}
+\end{Verbatim}

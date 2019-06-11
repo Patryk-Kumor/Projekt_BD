@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{f\PYGZus{}upvote}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{):}
+    \PYG{k}{if} \PYG{n}{authorize\PYGZus{}or\PYGZus{}create\PYGZus{}member}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}upvote\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}member\PYGZsq{}}\PYG{p}{],}
+                                  \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}upvote\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}password\PYGZsq{}}\PYG{p}{],}
+                                  \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}upvote\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}timestamp\PYGZsq{}}\PYG{p}{]):}
+        \PYG{c+c1}{\PYGZsh{} Oddajemy głos =\PYGZgt{} 1 \PYGZhy{} upvote, \PYGZhy{}1 \PYGZhy{} downvote}
+        \PYG{k}{if} \PYG{n}{vote}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}upvote\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}member\PYGZsq{}}\PYG{p}{],} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}upvote\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}action\PYGZsq{}}\PYG{p}{]):}
+            \PYG{n}{conn}\PYG{o}{.}\PYG{n}{commit}\PYG{p}{()}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+        \PYG{k}{else}\PYG{p}{:}
+            \PYG{n}{conn}\PYG{o}{.}\PYG{n}{rollback}\PYG{p}{()}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{conn}\PYG{o}{.}\PYG{n}{rollback}\PYG{p}{()}
+\end{Verbatim}

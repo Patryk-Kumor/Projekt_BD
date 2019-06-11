@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{f\PYGZus{}trolls}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{):}
+    \PYG{k}{if} \PYG{n}{skan}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}trolls\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}timestamp\PYGZsq{}}\PYG{p}{]):}
+        \PYG{n}{cur}\PYG{o}{.}\PYG{n}{execute}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}SELECT id, action\PYGZus{}up, action\PYGZus{}ratio + action\PYGZus{}up, activity FROM member}
+\PYG{l+s+s2}{                       WHERE action\PYGZus{}ratio \PYGZgt{} 0 ORDER BY action\PYGZus{}ratio desc, id;\PYGZdq{}\PYGZdq{}\PYGZdq{}}\PYG{p}{)}
+        \PYG{n}{wynik} \PYG{o}{=} \PYG{n}{cur}\PYG{o}{.}\PYG{n}{fetchall}\PYG{p}{()}
+        \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}, \PYGZdq{}data\PYGZdq{} : }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n}{format\PYGZus{}fetch}\PYG{p}{(}\PYG{n}{wynik}\PYG{p}{)}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}status\PYGZdq{} : \PYGZdq{}błąd bazy danych \PYGZhy{} update\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+\end{Verbatim}

@@ -10,4 +10,19 @@
 \contentsline {section}{\numberline {3}Implementacja}{6}
 \contentsline {subsection}{\numberline {3.1}Dok\IeC {\l }adny opis wej\IeC {\'s}cia }{6}
 \contentsline {subsection}{\numberline {3.2}INIT i kolejne wywo\IeC {\l }ania programu}{6}
-\contentsline {subsection}{\numberline {3.3} }{7}
+\contentsline {subsection}{\numberline {3.3}<open> w funkcjach f\_open\_init i f\_open\_normal}{7}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{7}
+\contentsline {subsection}{\numberline {3.4}<leader> w funkcji f\_leader}{8}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{8}
+\contentsline {subsection}{\numberline {3.5}<protest>/<support> w funkcji f\_protest/f\_support}{9}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{9}
+\contentsline {subsection}{\numberline {3.6}<upvote>/<downvote> w funkcji f\_upvote/f\_downvote }{10}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{10}
+\contentsline {subsection}{\numberline {3.7}<project> w funkcji f\_projects }{11}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{11}
+\contentsline {subsection}{\numberline {3.8}<votes> w funkcji f\_votes }{12}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{12}
+\contentsline {subsection}{\numberline {3.9}<actions> w funkcji f\_actions }{14}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{14}
+\contentsline {subsection}{\numberline {3.10}<trolls> w funkcji f\_trolls }{16}
+\contentsline {paragraph}{Opis dzia\IeC {\l }ania: }{16}

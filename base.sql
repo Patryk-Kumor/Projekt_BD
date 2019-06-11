@@ -7,21 +7,21 @@
 #
 */
 
+-- CZYSZCZENIE POPRZEDNIEGO INITA (w przypadku wielokrotnych wywoływań --init bez potrzeby czyszczenia ręcznie bazy)
+drop table if exists "global_ids" cascade;
+drop table if exists "member" cascade;
+drop table if exists "authority" cascade;
+drop table if exists "action" cascade;
+drop table if exists "vote" cascade;
+drop table if exists "project" cascade;
+drop role  if exists app;
+drop extension if exists pgcrypto;
 
--- CZYSZCZENIE POPRZEDNIEGO INITA
- drop table if exists "global_ids" cascade;
- drop table if exists "member" cascade;
- drop table if exists "authority" cascade;
- drop table if exists "action" cascade;
- drop table if exists "vote" cascade;
- drop table if exists "project" cascade;
- drop role  if exists app;
- drop extension if exists pgcrypto;
---
-
+-- Rozszerzenie bazy danych o moduł pgcrypto
 
 CREATE EXTENSION pgcrypto;
 
+-- Utworzenie wszystkich tabel
 
 CREATE TABLE global_ids (
   ID            bigint NOT NULL, 
@@ -60,6 +60,7 @@ CREATE TABLE action (
   negative_votes bigint DEFAULT 0 NOT NULL, 
   PRIMARY KEY (ID));
 
+-- Dodanie do tabel kluczy obcych 
 
 ALTER TABLE project ADD CONSTRAINT "authority owns projects" FOREIGN KEY (authorityID) REFERENCES authority (ID);
 ALTER TABLE action ADD CONSTRAINT " member has action" FOREIGN KEY (memberID) REFERENCES member (ID);
@@ -67,8 +68,11 @@ ALTER TABLE action ADD CONSTRAINT "project has actions" FOREIGN KEY (projectID) 
 ALTER TABLE vote ADD CONSTRAINT "member can vote" FOREIGN KEY (memberID) REFERENCES member (ID);
 ALTER TABLE vote ADD CONSTRAINT "votes for action" FOREIGN KEY (actionID) REFERENCES action (ID);
 
+-- Utworzenie użytkownika app
 
 CREATE user app WITH encrypted password 'qwerty';
+
+-- Nadanie uprawień użytkownikowi app do INSERT, UPDATE i SELECT na wszystkich tabelach utworzonych powyżej 
 
 GRANT INSERT ON global_ids TO app; 
 GRANT INSERT ON member TO app; 

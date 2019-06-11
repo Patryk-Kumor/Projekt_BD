@@ -93,7 +93,7 @@ def f_leader(arg):
 # Zwracamy aktywność membera, oraz liczymy różnicę pomiędzy czasami aktywności 
 # (do późniejszego sprawdzenia czy należy już zamrozić użytkownika czy nie)
 def check_member(id_num, password, timestamp):                        
-    cur.execute("""SELECT password = crypt(%s, password), activity, (to_timestamp(%s) - activity_date), leader 
+    cur.execute("""SELECT password = crypt(%s, password), activity, age(to_timestamp(%s), activity_date), leader 
                     FROM member WHERE ID = %s;""",
                 (password, timestamp, id_num))    
     krotki = cur.fetchall()
@@ -119,17 +119,11 @@ def authorize_or_create_member(member, password, timestamp):
                 if interval > 365:
                     # User był aktywny - ale różnica większa niż rok (trzeba go uśpić)
                     print '{"status" : "ERROR", "debug" : "Member jest nieaktywny"}'
-                    # Uśpienie membera
-                    cur.execute("UPDATE member SET activity = False WHERE id = %s;", (member,))   
-                    conn.commit()
-                    # Commit i koniec funkcji zewnętrznej
                     return 0
                 else:
                     # User był aktwyny - i różnica mniejsza niż rok -> aktualizacja daty ostatniej aktywności
                     # Aktualizacja daty aktywności
                     cur.execute("UPDATE member SET activity_date = to_timestamp(%s) WHERE id = %s;", (timestamp, member,))   
-                    # Z commitem czekamy na koniec funkcji zewnętrznej
-                    #conn.commit()                                 
                     return 1
             else:
                 # Nieaktwny (zamrożony) member
@@ -144,7 +138,6 @@ def authorize_or_create_member(member, password, timestamp):
         if check_id(member):
             try:
                 add_member(member, password, timestamp, False) #false = bo nie jest to leader
-                #conn.commit() Z commitem czekamy do końca funkcji zewnętrznej
                 return 1
             except Exception as err:
                 # W przypadku braku możliwości dodania krotki w member, kończymy funkcję zewnętrzną
@@ -342,18 +335,12 @@ def authorize_leader(member, password, timestamp):
                     #Sprawdzamy różnicę czasów i aktualizujemy
                     interval = mem[2].days
                     if interval > 365:
-                        # User był aktywny - ale różnica większa niż rok (trzeba go uśpić)
-                        # Uśpienie membera
-                        cur.execute("UPDATE member SET activity = False WHERE id = %s;", (member,))   
-                        conn.commit()
-                        # Commit i koniec funkcji zewnętrznej
+                        # User był aktywny - ale różnica większa niż rok 
                         return 0
                     else:
                         # User był aktwyny - i różnica mniejsza niż rok -> aktualizacja daty ostatniej aktywności
                         # Aktualizacja daty aktywności
-                        cur.execute("UPDATE member SET activity_date = to_timestamp(%s) WHERE id = %s;", (timestamp, member,))   
-                        # Z commitem czekamy na koniec funkcji zewnętrznej
-                        #conn.commit()                                 
+                        cur.execute("UPDATE member SET activity_date = to_timestamp(%s) WHERE id = %s;", (timestamp, member,))                                
                         return 1
                 else:
                     # Nieaktwny (zamrożony) member

@@ -1,0 +1,65 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{def} \PYG{n+nf}{f\PYGZus{}votes}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{):}
+    \PYG{k}{if} \PYG{n}{authorize\PYGZus{}leader}\PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}member\PYGZsq{}}\PYG{p}{],}
+                        \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}password\PYGZsq{}}\PYG{p}{],}
+                        \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}timestamp\PYGZsq{}}\PYG{p}{]):}
+        \PYG{k}{try}\PYG{p}{:}
+            \PYG{k}{if} \PYG{l+s+s1}{\PYGZsq{}action\PYGZsq{}} \PYG{o+ow}{in} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{]:}
+                \PYG{n}{cur}\PYG{o}{.}\PYG{n}{execute}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}SELECT mem.id,}
+\PYG{l+s+s2}{                                      sum(case when value then 1 else 0 end) as votes\PYGZus{}for,}
+\PYG{l+s+s2}{                                      count(value) as votes}
+\PYG{l+s+s2}{                                FROM MEMBER as mem LEFT JOIN}
+\PYG{l+s+s2}{                                (SELECT member.id,}
+\PYG{l+s+s2}{                                        vote.value,}
+\PYG{l+s+s2}{                                        action.id as actionid,}
+\PYG{l+s+s2}{                                        project.id as projectid,}
+\PYG{l+s+s2}{                                        project.authorityid as authorityid}
+\PYG{l+s+s2}{                                FROM member}
+\PYG{l+s+s2}{                                    LEFT JOIN vote ON(member.id = vote.memberID)}
+\PYG{l+s+s2}{                                    LEFT JOIN action ON(vote.actionid = action.id)}
+\PYG{l+s+s2}{                                    LEFT JOIN project ON(action.projectid = project.id)}
+\PYG{l+s+s2}{                                WHERE action.id = }\PYG{l+s+si}{\PYGZpc{}s}
+\PYG{l+s+s2}{                                ) as foo ON(mem.id = foo.id)}
+\PYG{l+s+s2}{                                GROUP BY mem.id ORDER BY mem.id;\PYGZdq{}\PYGZdq{}\PYGZdq{}}\PYG{p}{,} \PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}action\PYGZsq{}}\PYG{p}{],))}
+            \PYG{k}{elif} \PYG{l+s+s1}{\PYGZsq{}project\PYGZsq{}} \PYG{o+ow}{in} \PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{]:}
+                \PYG{n}{cur}\PYG{o}{.}\PYG{n}{execute}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}SELECT mem.id,}
+\PYG{l+s+s2}{                                      sum(case when value then 1 else 0 end) as votes\PYGZus{}for,}
+\PYG{l+s+s2}{                                      count(value) as votes}
+\PYG{l+s+s2}{                                FROM MEMBER as mem LEFT JOIN}
+\PYG{l+s+s2}{                                (SELECT member.id,}
+\PYG{l+s+s2}{                                        vote.value,}
+\PYG{l+s+s2}{                                        action.id as actionid,}
+\PYG{l+s+s2}{                                        project.id as projectid,}
+\PYG{l+s+s2}{                                        project.authorityid as authorityid}
+\PYG{l+s+s2}{                                FROM member}
+\PYG{l+s+s2}{                                    LEFT JOIN vote ON(member.id = vote.memberID)}
+\PYG{l+s+s2}{                                    LEFT JOIN action ON(vote.actionid = action.id)}
+\PYG{l+s+s2}{                                    LEFT JOIN project ON(action.projectid = project.id)}
+\PYG{l+s+s2}{                                WHERE action.projectid = }\PYG{l+s+si}{\PYGZpc{}s}
+\PYG{l+s+s2}{                                ) as foo ON(mem.id = foo.id)}
+\PYG{l+s+s2}{                                GROUP BY mem.id ORDER BY mem.id;\PYGZdq{}\PYGZdq{}\PYGZdq{}}\PYG{p}{,} \PYG{p}{(}\PYG{n}{arg}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}votes\PYGZsq{}}\PYG{p}{][}\PYG{l+s+s1}{\PYGZsq{}project\PYGZsq{}}\PYG{p}{],))}
+
+            \PYG{k}{else}\PYG{p}{:}
+                \PYG{n}{cur}\PYG{o}{.}\PYG{n}{execute}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}\PYGZdq{}\PYGZdq{}SELECT mem.id,}
+\PYG{l+s+s2}{                                      sum(case when value then 1 else 0 end) as votes\PYGZus{}for,}
+\PYG{l+s+s2}{                                      count(value) as votes}
+\PYG{l+s+s2}{                                FROM MEMBER as mem LEFT JOIN}
+\PYG{l+s+s2}{                                (SELECT member.id,}
+\PYG{l+s+s2}{                                        vote.value,}
+\PYG{l+s+s2}{                                        action.id as actionid,}
+\PYG{l+s+s2}{                                        project.id as projectid,}
+\PYG{l+s+s2}{                                        project.authorityid as authorityid}
+\PYG{l+s+s2}{                                FROM member}
+\PYG{l+s+s2}{                                    LEFT JOIN vote ON(member.id = vote.memberID)}
+\PYG{l+s+s2}{                                    LEFT JOIN action ON(vote.actionid = action.id)}
+\PYG{l+s+s2}{                                    LEFT JOIN project ON(action.projectid = project.id)}
+\PYG{l+s+s2}{                                ) as foo ON(mem.id = foo.id)}
+\PYG{l+s+s2}{                                GROUP BY mem.id ORDER BY mem.id;\PYGZdq{}\PYGZdq{}\PYGZdq{}}\PYG{p}{)}
+            \PYG{n}{wynik} \PYG{o}{=} \PYG{n}{cur}\PYG{o}{.}\PYG{n}{fetchall}\PYG{p}{()}
+            \PYG{n}{wynik} \PYG{o}{=} \PYG{n+nb}{map}\PYG{p}{(}\PYG{n}{helper\PYGZus{}votes\PYGZus{}tuple}\PYG{p}{,} \PYG{n}{wynik}\PYG{p}{)}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}OK\PYGZdq{}, \PYGZdq{}data\PYGZdq{} : }\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n}{format\PYGZus{}fetch}\PYG{p}{(}\PYG{n}{wynik}\PYG{p}{)}
+        \PYG{k}{except} \PYG{n+ne}{Exception} \PYG{k}{as} \PYG{n}{err}\PYG{p}{:}
+            \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{},}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s1}{ \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+s1}{\PYGZdq{} \PYGZcb{}\PYGZsq{}} \PYG{o}{\PYGZpc{}} \PYG{n+nb}{str}\PYG{p}{(}\PYG{n}{err}\PYG{p}{)[}\PYG{l+m+mi}{0}\PYG{p}{:}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{]}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{k}{print} \PYG{l+s+s1}{\PYGZsq{}\PYGZob{}\PYGZdq{}status\PYGZdq{} : \PYGZdq{}ERROR\PYGZdq{}, \PYGZdq{}debug\PYGZdq{} : \PYGZdq{}Błąd leadera\PYGZdq{}\PYGZcb{}\PYGZsq{}}
+\end{Verbatim}
